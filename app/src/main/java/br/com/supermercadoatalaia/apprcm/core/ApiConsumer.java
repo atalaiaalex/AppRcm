@@ -57,7 +57,7 @@ public class ApiConsumer {
         LOJA = "/loja/";
         EAN = "/ean/";
 
-        Log.i("Saida REST_COLETAS", REST_COLETAS);
+        //Log.i("Saida REST_COLETAS", REST_COLETAS);
     }
 
     public void iniciarConexao(String method, URL url) throws IOException {

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,6 +18,7 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
 import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
@@ -66,11 +68,14 @@ public class MainActivity extends AppCompatActivity {
     private Button btnAlterarItem;
     private Button btnExcluirItem;
     private Button btnLimpar;
+    private Button btnLancar;
 
     private TextView txvRazaoSocial;
     private TextView txvDataMvto;
     private TextView txvPedidoId;
     private TextView txvDescricao;
+
+    private DatePicker dpkValidade;
 
     private ListView listLancamentoColeta;
 
@@ -142,6 +147,15 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb.setText(
                 String.valueOf(qntEmb)
         );
+
+        Calendar dataValidade = Calendar.getInstance();
+        dataValidade.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
+
+        int dias = dataValidade.compareTo(Calendar.getInstance());
+        //Ver qntos dias tem até a validade (dpkValidade) e comparar com a DiasValidadeMinima do produto
+        int difDias = dias - produto.getDiasValidadeMinima();
+
+        Toast.makeText(this, "Dias: " + dias + " DiasPraVender: " + difDias, Toast.LENGTH_LONG).show();
     }
 
     private void setColeta(Coleta coleta) {
@@ -298,7 +312,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             setItemParaSalvar();
             item = coletaController.salvarItemColeta(coleta, item);
-            btnBuscarColeta_Click();
+            btnBuscarColeta_Click(); //Devo só buscar a lista com os itens da coleta... para usar no adapter
+            //Ou só dar um add para o item novo que retornou do metodo salvarItemColeta acima
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -398,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
                                     setProdutoPorEan();
                                 } catch (IOException e) {
                                     Toast.makeText(
-                                            null,
+                                            getApplicationContext(),
                                             "Erro na conexão!!!\n" + e.getMessage(),
                                             Toast.LENGTH_LONG
                                     ).show();
@@ -438,13 +453,16 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarItem = findViewById(R.id.btnAlterarItem);
         btnExcluirItem = findViewById(R.id.btnExcluirItem);
         btnLimpar = findViewById(R.id.btnLimpar);
+        btnLancar = findViewById(R.id.btnLancar);
 
         txvRazaoSocial = findViewById(R.id.txvRazaoSocial);
         txvDataMvto = findViewById(R.id.txvDataMvto);
         txvPedidoId = findViewById(R.id.txvPedidoId);
         txvDescricao = findViewById(R.id.txvDescricao);
 
-        listLancamentoColeta = findViewById(R.id.listLancamentoColeta);
+        dpkValidade = findViewById(R.id.dpkValidade);
+
+        //listLancamentoColeta = findViewById(R.id.listLancamentoColeta);
 
         btnBuscarColeta.setOnClickListener(btnBuscarColetaPorFornecedorNotaFiscal_Click());
         btnAlterarColeta.setOnClickListener(btnAlterarColeta_Click());
@@ -452,8 +470,9 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarItem.setOnClickListener(btnAlterarItemColeta_Click());
         btnExcluirItem.setOnClickListener(btnExcluirItemColeta_Click());
         btnLimpar.setOnClickListener(btnLimpar_Click());
+        btnLancar.setOnClickListener(btnSalvarItemColeta_Click());
 
-        edtEan.setOnClickListener(edtEan_Click());
+        edtEan.setOnFocusChangeListener(edtEan_FocusChange());
     }
 
     public void configurar() {
@@ -487,11 +506,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private View.OnClickListener edtEan_Click() {
-        return new View.OnClickListener(){
+    private View.OnFocusChangeListener edtEan_FocusChange() {
+        return new View.OnFocusChangeListener() {
             @Override
-            public void onClick(View view) {
-                abrirLeitura();
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(hasFocus) {
+                    abrirLeitura();
+                } else { //Esse trecho do else deve ficar dentro de um botão lançar, para só ativar depois de preencher os campos
+                    //necessários, ficando a cargo do usuário saber o momento de apertar este botão.
+                    try {
+
+
+                        //Teste só da busca de produto, preciso de uma unidade, que é seta pelo pedido quando inicio a coleta
+                        //devo só permitir interajir com o produto depois de encontrado o fornecedor e o pedido
+                        setUnidade("002");
+
+
+
+
+                        setProdutoPorEan();
+                    } catch (IOException e) {
+                        Toast.makeText(
+                                getApplicationContext(),
+                                "Erro na conexão!!!\n" + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                    preencherCamposItem();
+                }
             }
         };
     }

@@ -93,13 +93,13 @@
 
         </TableRow>
 
-        <!--Usar mesma medidas das colunas no layout de itens-->
+        <!--Usar mesma medidas das colunas no layout de itens
         <ListView
             android:id="@+id/listLancamentoColeta"
             android:layout_width="wrap_content"
-            android:layout_height="400dp">
+            android:layout_height="300dp">
 
-        </ListView>
+        </ListView>-->
     </TableLayout>
 
     <LinearLayout
@@ -156,10 +156,23 @@
             android:layout_weight="1"/>
     </LinearLayout>
 
+    <DatePicker
+        android:id="@+id/dpkValidade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:tooltipText="@string/hint_validade"
+        android:hint="@string/hint_validade" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnLancar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/botao_lancar"/>
 
         <Button
             android:id="@+id/btnLimpar"

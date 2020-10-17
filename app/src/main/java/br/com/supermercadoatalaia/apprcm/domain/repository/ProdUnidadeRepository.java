@@ -52,7 +52,8 @@ public class ProdUnidadeRepository {
     private URL urlProdutoEanUnidade(String ean, String unidade) throws MalformedURLException {
         return new URL(
                 ApiConsumer.REST_PRODUTOS +
-                        "/" + ean +
+                        ApiConsumer.EAN +
+                        ean +
                         ApiConsumer.LOJA +
                         unidade
         );
