@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">AppRcm</string>
+
+    <string name="botao_buscar">Buscar</string>
+    <string name="botao_alterar">Alterar</string>
+    <string name="botao_excluir">Excluir</string>
+    <string name="botao_limpar">Limpar</string>
+    <string name="botao_sair">Sair</string>
+    <string name="botao_flash">Flash</string>
+    <string name="botao_salvar">Salvar</string>
+    <string name="botao_cancelar">Cancelar</string>
+    <string name="botao_configurar">Configurar</string>
+
+    <string name="coluna_produto_id">Cód.Produto</string>
+
+    <string name="hint_qnt_total">QNT Total</string>
+    <string name="hint_qnt_emb">QNT de Emb.</string>
+    <string name="hint_qnt_na_emb">QNT na Emb.</string>
+    <string name="hint_ean">EAN</string>
+    <string name="hint_nota_fiscal">Nota Fiscal</string>
+    <string name="hint_cnpj">CNPJ</string>
+</resources>

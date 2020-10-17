@@ -1,0 +1,102 @@
+package br.com.supermercadoatalaia.apprcm.domain.model;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+public class LancamentoColeta implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private Long id;
+    private Long produtoId;
+    private Double qntNaEmb;
+    private Double qntEmb;
+    private Double qntTotal;
+    private LocalDateTime dataAlteracao;
+
+    public LancamentoColeta() {}
+
+    public LancamentoColeta(Long id, Long produtoId, Double qntNaEmb, Double qntEmb
+            ,Double qntTotal, LocalDateTime dataAlteracao) {
+        super();
+        this.id = id;
+        this.produtoId = produtoId;
+        this.qntNaEmb = qntNaEmb;
+        this.qntEmb = qntEmb;
+        this.qntTotal = qntTotal;
+        this.dataAlteracao = dataAlteracao;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getProdutoId() {
+        return produtoId;
+    }
+
+    public void setProdutoId(Long produtoId) {
+        this.produtoId = produtoId;
+    }
+
+    public Double getQntNaEmb() {
+        return qntNaEmb;
+    }
+
+    public void setQntNaEmb(Double qntNaEmb) {
+        this.qntNaEmb = qntNaEmb;
+    }
+
+    public Double getQntEmb() {
+        return qntEmb;
+    }
+
+    public void setQntEmb(Double qntEmb) {
+        this.qntEmb = qntEmb;
+    }
+
+    public Double getQntTotal() {
+        return qntTotal;
+    }
+
+    public void setQntTotal(Double qntTotal) {
+        this.qntTotal = qntTotal;
+    }
+
+    public LocalDateTime getDataAlteracao() {
+        return dataAlteracao;
+    }
+
+    public void setDataAlteracao(LocalDateTime dataAlteracao) {
+        this.dataAlteracao = dataAlteracao;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LancamentoColeta other = (LancamentoColeta) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
+    }
+}
