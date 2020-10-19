@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private Double qntNaEmb;
     private Double qntEmb;
     private Double qntTotal;
+    private Calendar vencimento;
 
     private EditText edtCnpjCfp;
     private EditText edtNumeroNotaFiscal;
@@ -69,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private Button btnExcluirItem;
     private Button btnLimpar;
     private Button btnLancar;
+    private Button btnNovaColeta;
+    private Button btnIniciarColeta;
 
     private TextView txvRazaoSocial;
     private TextView txvDataMvto;
@@ -87,8 +90,9 @@ public class MainActivity extends AppCompatActivity {
         initComponents();
         initPermissoes();
 
-        String pasta = getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath();
-        configApp = new ConfigApp(pasta);
+        configApp = new ConfigApp(
+                getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath()
+        );
 
         try {
             coletaController = new ColetaController(configApp);
@@ -101,24 +105,52 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /*
-    Enter no edtNumeroNotaFiscal SalvaColeta
-        focu no edtEan
-    Entrada de foco no edtEan chama tela de leitura
-        pela camera de codigo de barras
-    Na tela de Leitura ter opção para digitar EAN manualmente
-    Entrada no edtQntTotal desabilitará edtQntNaEmb e edtQntEmb
-        se a multiplicação deles for zero, e o enter salvará o item
-    Enter no edtQntNaEmb levará para o edtQntEmb
-    Enter no edtQntEmb desabilitará o edtQntTotal se a
-        multiplicação deles for maior que zero, e salvará o item
-    Cada clique em um item(LancamentoColeta) vai instanciar o produto
-        pelo Id
-     */
+    private void habilitarCamposColeta() {
+        edtCnpjCfp.setEnabled(true);
+        edtNumeroNotaFiscal.setEnabled(true);
+    }
+
+    private void iniciarNovaColeta() {
+        habilitarCamposColeta();
+
+        edtCnpjCfp.setText("");
+        edtNumeroNotaFiscal.setText("");
+        txvDataMvto.setText("");
+        txvPedidoId.setText("");
+        txvRazaoSocial.setText("");
+
+        edtCnpjCfp.requestFocus();
+    }
+
+    private void habilitarCamposItem() {
+        edtEan.setEnabled(true);
+        edtQntEmb.setEnabled(true);
+        edtQntNaEmb.setEnabled(true);
+        edtQntTotal.setEnabled(true);
+        dpkValidade.setEnabled(true);
+    }
+
+    private void iniciarNovoItem() {
+        Calendar calendar = Calendar.getInstance();
+
+        habilitarCamposItem();
+
+        edtEan.setText("");
+        txvDescricao.setText("");
+        edtQntEmb.setText("0");
+        edtQntNaEmb.setText("0");
+        edtQntTotal.setText("0");
+
+        dpkValidade.updateDate(
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+
+        edtEan.requestFocus();
+    }
 
     private void preencherCampos() throws IOException {
-        limparCamposItens();
-
         setFornecedor(fornecedorController.buscarPorId(coleta.getFornecedorId()));
         setPedido(pedidoController.buscarPorId(coleta.getPedidoId()));
 
@@ -132,8 +164,14 @@ public class MainActivity extends AppCompatActivity {
                 String.valueOf(coleta.getPedidoId())
         );
 
-        //Preencher Adpater do List LancamentoColeta
+        edtCnpjCfp.setEnabled(false);
+        edtNumeroNotaFiscal.setEnabled(false);
+
+        //usar metodo Preencher Adpater do List LancamentoColeta com o primeiro item
     }
+
+    //metódo Preencher Adpater do List LancamentoColeta
+    //para ser usado a cada click no list, setando as variaveis globais referente ao item
 
     private void preencherCamposItem() {
         edtEan.setText(produto.getEan());
@@ -148,14 +186,17 @@ public class MainActivity extends AppCompatActivity {
                 String.valueOf(qntEmb)
         );
 
-        Calendar dataValidade = Calendar.getInstance();
-        dataValidade.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
+        dpkValidade.updateDate(
+                vencimento.get(Calendar.YEAR),
+                vencimento.get(Calendar.MONTH),
+                vencimento.get(Calendar.DAY_OF_MONTH)
+        );
 
-        int dias = dataValidade.compareTo(Calendar.getInstance());
-        //Ver qntos dias tem até a validade (dpkValidade) e comparar com a DiasValidadeMinima do produto
-        int difDias = dias - produto.getDiasValidadeMinima();
-
-        Toast.makeText(this, "Dias: " + dias + " DiasPraVender: " + difDias, Toast.LENGTH_LONG).show();
+        edtEan.setEnabled(false);
+        edtQntEmb.setEnabled(false);
+        edtQntNaEmb.setEnabled(false);
+        edtQntTotal.setEnabled(false);
+        dpkValidade.setEnabled(false);
     }
 
     private void setColeta(Coleta coleta) {
@@ -176,11 +217,17 @@ public class MainActivity extends AppCompatActivity {
         this.produto = produto;
     }
 
-    private void setItemParaSalvar() throws IOException {
+    private void setQntsValidadeItem() throws IOException {
         qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
         qntEmb = Double.valueOf(edtQntEmb.getText().toString());
         qntTotal = Double.valueOf(edtQntTotal.getText().toString());
+        vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
+
         setProdutoPorEan();
+    }
+
+    private void setItemParaSalvar() throws IOException {
+        setQntsValidadeItem();
 
         setItem(
                 new LancamentoColeta(
@@ -189,16 +236,15 @@ public class MainActivity extends AppCompatActivity {
                     qntNaEmb,
                     qntEmb,
                     qntTotal,
+                    vencimento,
+                    produto.getDiasValidadeMinima(),
                     null
                 )
         );
     }
 
     private void setItemParaAlterar() throws IOException {
-        qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
-        qntEmb = Double.valueOf(edtQntEmb.getText().toString());
-        qntTotal = Double.valueOf(edtQntTotal.getText().toString());
-        setProdutoPorEan();
+        setQntsValidadeItem();
 
         setItem(
                 new LancamentoColeta(
@@ -207,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
                         qntNaEmb,
                         qntEmb,
                         qntTotal,
+                        vencimento,
+                        produto.getDiasValidadeMinima(),
                         item.getDataAlteracao()
                 )
         );
@@ -281,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             coletaController.deletarColeta(coleta);
             setColeta(new Coleta());
-            preencherCampos();
+            iniciarNovaColeta();
             Toast.makeText(this, "Deletado!!!", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao deletar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
@@ -289,12 +337,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void atualizarColeta() {
-        try {
-            setColetaParaAlterar();
-            coleta = coletaController.atualizarColeta(coleta);
-            preencherCampos();
-        } catch (IOException e) {
-            Toast.makeText(this, "Erro ao alterar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+        if(btnAlterarColeta.getText().equals(R.string.botao_alterar)) {
+            habilitarCamposItem();
+            btnAlterarColeta.setText(R.string.botao_salvar);
+        } else {
+            try {
+                setColetaParaAlterar();
+                coleta = coletaController.atualizarColeta(coleta);
+                btnAlterarColeta.setText(R.string.botao_alterar);
+                preencherCampos();
+            } catch (IOException e) {
+                Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -312,18 +366,20 @@ public class MainActivity extends AppCompatActivity {
         try {
             setItemParaSalvar();
             item = coletaController.salvarItemColeta(coleta, item);
-            btnBuscarColeta_Click(); //Devo só buscar a lista com os itens da coleta... para usar no adapter
-            //Ou só dar um add para o item novo que retornou do metodo salvarItemColeta acima
+            //add item no Adpater e atualizar o List
+            iniciarNovoItem();
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private void atualizarItemColeta() {
+        //Fazer igual o atualizarColeta mudando o nome do botão para Salvar....
         try {
             setItemParaAlterar();
             item = coletaController.atualizarItemColeta(coleta, item);
-            btnBuscarColeta_Click();
+            //alterar item no Adapter
+            iniciarNovoItem();
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao alterar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -332,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
     private void deletarItemColeta() {
         try {
             coletaController.deletarItemColeta(coleta, item);
-            btnBuscarColeta_Click();
+            iniciarNovoItem();
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao deletar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -355,14 +411,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao buscar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void limparCamposItens() {
-        edtEan.setText("");
-        txvDescricao.setText("");
-        edtQntEmb.setText("0");
-        edtQntNaEmb.setText("0");
-        edtQntTotal.setText("0");
     }
 
     private void abrirLeitura() {
@@ -454,6 +502,8 @@ public class MainActivity extends AppCompatActivity {
         btnExcluirItem = findViewById(R.id.btnExcluirItem);
         btnLimpar = findViewById(R.id.btnLimpar);
         btnLancar = findViewById(R.id.btnLancar);
+        btnNovaColeta = findViewById(R.id.btnNovaColeta);
+        btnIniciarColeta = findViewById(R.id.btnIniciarColeta);
 
         txvRazaoSocial = findViewById(R.id.txvRazaoSocial);
         txvDataMvto = findViewById(R.id.txvDataMvto);
@@ -471,6 +521,8 @@ public class MainActivity extends AppCompatActivity {
         btnExcluirItem.setOnClickListener(btnExcluirItemColeta_Click());
         btnLimpar.setOnClickListener(btnLimpar_Click());
         btnLancar.setOnClickListener(btnSalvarItemColeta_Click());
+        btnIniciarColeta.setOnClickListener(btnSalvarColeta_Click());
+        btnNovaColeta.setOnClickListener(btnNovaColeta_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
     }
@@ -538,12 +590,20 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    private View.OnClickListener btnNovaColeta_Click() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                iniciarNovaColeta();
+            }
+        };
+    }
+
     private View.OnClickListener btnLimpar_Click() {
         return new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                limparCamposItens();
-                preencherCamposItem();
+                iniciarNovoItem();
             }
         };
     }
@@ -598,6 +658,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void funcao() {
                 salvarColeta();
+                iniciarNovoItem();
             }
         }.construir();
     }

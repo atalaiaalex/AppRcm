@@ -1,7 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.domain.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Calendar;
 
 public class LancamentoColeta implements Serializable {
 
@@ -12,18 +12,23 @@ public class LancamentoColeta implements Serializable {
     private Double qntNaEmb;
     private Double qntEmb;
     private Double qntTotal;
-    private LocalDateTime dataAlteracao;
+    private Calendar vencimento;
+    private Integer diasValidadeMinima;
+    private Calendar dataAlteracao;
 
     public LancamentoColeta() {}
 
     public LancamentoColeta(Long id, Long produtoId, Double qntNaEmb, Double qntEmb
-            ,Double qntTotal, LocalDateTime dataAlteracao) {
+            ,Double qntTotal, Calendar vencimento, Integer diasValidadeMinima,
+                            Calendar dataAlteracao) {
         super();
         this.id = id;
         this.produtoId = produtoId;
         this.qntNaEmb = qntNaEmb;
         this.qntEmb = qntEmb;
         this.qntTotal = qntTotal;
+        this.vencimento = vencimento;
+        this.diasValidadeMinima = diasValidadeMinima;
         this.dataAlteracao = dataAlteracao;
     }
 
@@ -67,11 +72,27 @@ public class LancamentoColeta implements Serializable {
         this.qntTotal = qntTotal;
     }
 
-    public LocalDateTime getDataAlteracao() {
+    public Calendar getVencimento() {
+        return vencimento;
+    }
+
+    public void setVencimento(Calendar vencimento) {
+        this.vencimento = vencimento;
+    }
+
+    public Integer getDiasValidadeMinima() {
+        return diasValidadeMinima;
+    }
+
+    public void setDiasValidadeMinima(Integer diasValidadeMinima) {
+        this.diasValidadeMinima = diasValidadeMinima;
+    }
+
+    public Calendar getDataAlteracao() {
         return dataAlteracao;
     }
 
-    public void setDataAlteracao(LocalDateTime dataAlteracao) {
+    public void setDataAlteracao(Calendar dataAlteracao) {
         this.dataAlteracao = dataAlteracao;
     }
 

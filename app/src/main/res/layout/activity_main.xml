@@ -37,16 +37,22 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/btnIniciarColeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/botao_iniciar" />
+
+        <Button
             android:id="@+id/btnBuscarColeta"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/botao_buscar"/>
+            android:text="@string/botao_buscar" />
 
         <Button
             android:id="@+id/btnAlterarColeta"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/botao_alterar"/>
+            android:text="@string/botao_alterar" />
 
         <Button
             android:id="@+id/btnExcluirColeta"
@@ -154,14 +160,18 @@
             android:inputType="numberDecimal"
             android:hint="@string/hint_qnt_total"
             android:layout_weight="1"/>
+
     </LinearLayout>
 
     <DatePicker
         android:id="@+id/dpkValidade"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:tooltipText="@string/hint_validade"
-        android:hint="@string/hint_validade" />
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:datePickerMode="spinner"
+        android:calendarViewShown="false"
+        android:hint="@string/hint_validade"
+        android:tooltipText="@string/hint_validade" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -193,4 +203,11 @@
             android:text="@string/botao_excluir"/>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnNovaColeta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:text="@string/botao_nova_coleta"/>
 </LinearLayout>

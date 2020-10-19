@@ -7,9 +7,10 @@ import android.util.JsonWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
@@ -26,7 +27,7 @@ public class ColetaRepository {
         apiConsumer.carregarConfiguracao();
     }
 
-    public Coleta buscar(Long id) throws IOException {
+    public Coleta buscar(Long id) throws IOException, ParseException {
         apiConsumer.iniciarConexao("GET", urlColetaId(id));
         apiConsumer.addCabecalho("Accept", "application/json");
 
@@ -36,7 +37,7 @@ public class ColetaRepository {
         return coleta;
     }
 
-    public List<Coleta> listarPorFornecedor(Long fornecedorId) throws IOException {
+    public List<Coleta> listarPorFornecedor(Long fornecedorId) throws IOException, ParseException {
         apiConsumer.iniciarConexao("GET", urlColetaFornecedorId(fornecedorId));
         apiConsumer.addCabecalho("Accept", "application/json");
 
@@ -46,7 +47,7 @@ public class ColetaRepository {
         return coletas;
     }
 
-    public List<Coleta> listarPorNf(Long numeroNotaFiscal) throws IOException {
+    public List<Coleta> listarPorNf(Long numeroNotaFiscal) throws IOException, ParseException {
         apiConsumer.iniciarConexao("GET", urlColetaNumeroNotaFiscal(numeroNotaFiscal));
         apiConsumer.addCabecalho("Accept", "application/json");
 
@@ -56,7 +57,8 @@ public class ColetaRepository {
         return coletas;
     }
 
-    public Coleta buscar(Long fornecedorId, Long numeroNotaFiscal) throws IOException {
+    public Coleta buscar(Long fornecedorId, Long numeroNotaFiscal)
+            throws IOException, ParseException {
         apiConsumer.iniciarConexao("GET",
                 urlColetaFornecedorIdNumeroNotaFiscal(fornecedorId, numeroNotaFiscal)
         );
@@ -69,7 +71,7 @@ public class ColetaRepository {
 
     }
 
-    public Coleta salvar(Coleta coleta) throws IOException {
+    public Coleta salvar(Coleta coleta) throws IOException, ParseException {
         apiConsumer.iniciarConexao("POST",
                 new URL(ApiConsumer.REST_COLETAS)
         );
@@ -83,7 +85,7 @@ public class ColetaRepository {
         return coleta;
     }
 
-    public Coleta atualizar(Coleta coleta) throws IOException {
+    public Coleta atualizar(Coleta coleta) throws IOException, ParseException {
         apiConsumer.iniciarConexao("PUT",
                 urlColetaId(coleta.getId())
         );
@@ -109,7 +111,8 @@ public class ColetaRepository {
         return apiConsumer.getHttpResposta();
     }
 
-    public LancamentoColeta salvarItem(Coleta coleta, LancamentoColeta item) throws IOException {
+    public LancamentoColeta salvarItem(Coleta coleta, LancamentoColeta item)
+            throws IOException, ParseException {
         apiConsumer.iniciarConexao("POST",
                 urlColetaLancar(coleta.getId())
         );
@@ -123,7 +126,8 @@ public class ColetaRepository {
         return item;
     }
 
-    public LancamentoColeta atualizarItem(Coleta coleta, LancamentoColeta item) throws IOException {
+    public LancamentoColeta atualizarItem(Coleta coleta, LancamentoColeta item)
+            throws IOException, ParseException {
         apiConsumer.iniciarConexao("PUT",
                 urlColetaLancarId(coleta.getId(), item.getId())
         );
@@ -257,7 +261,8 @@ public class ColetaRepository {
         }
     }
 
-    private List<Coleta> instanciarListaColeta(JsonReader jsonReader) throws IOException {
+    private List<Coleta> instanciarListaColeta(JsonReader jsonReader)
+            throws IOException, ParseException {
         List<Coleta> coletas = new ArrayList<>();
 
         jsonReader.beginArray();
@@ -270,15 +275,16 @@ public class ColetaRepository {
         return coletas;
     }
 
-    private Coleta instanciarColeta(JsonReader jsonReader, boolean unico) throws IOException {
+    private Coleta instanciarColeta(JsonReader jsonReader, boolean unico)
+            throws IOException, ParseException {
         Long id = 0L;
         Long fornecedorId = 0L;
         Long numeroNotaFiscal = 0L;
         Long pedidoId = 0L;
         String unidade = "";
         List<LancamentoColeta> itens = new ArrayList<>();
-        LocalDateTime dataMovimento = null;
-        LocalDateTime dataAlteracao = null;
+        Calendar dataMovimento = null;
+        Calendar dataAlteracao = null;
 
         jsonReader.beginObject();
         while (jsonReader.hasNext()) {
@@ -294,11 +300,13 @@ public class ColetaRepository {
             } else if(key.equals("unidade")) {
                 unidade = jsonReader.nextString();
             } else if(key.equals("dataMovimento")) {
-                dataMovimento = LocalDateTime.parse
-                        (jsonReader.nextString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                dataMovimento.setTime(
+                        new SimpleDateFormat().parse(jsonReader.nextString())
+                );
             } else if(key.equals("dataAlteracao")) {
-                dataMovimento = LocalDateTime.parse
-                        (jsonReader.nextString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                dataAlteracao.setTime(
+                        new SimpleDateFormat().parse(jsonReader.nextString())
+                );
             } else if(key.equals("itens") && jsonReader.peek() != JsonToken.NULL) {
                 jsonReader.beginArray();
                 while (jsonReader.hasNext()) {
@@ -327,13 +335,16 @@ public class ColetaRepository {
         );
     }
 
-    private LancamentoColeta instanciarLancamentoColeta(JsonReader jsonReader) throws IOException {
+    private LancamentoColeta instanciarLancamentoColeta(JsonReader jsonReader)
+            throws IOException, ParseException {
         Long id = 0L;
         Long produtoId = 0L;
         Double qntNaEmb = 0.0;
         Double qntEmb = 0.0;
         Double qntTotal = 0.0;
-        LocalDateTime dataAlteracao = null;
+        Calendar vencimento = null;
+        Integer diasValidadeMinima = 0;
+        Calendar dataAlteracao = null;
 
         jsonReader.beginObject();
         while (jsonReader.hasNext()) {
@@ -348,9 +359,16 @@ public class ColetaRepository {
                 qntEmb = jsonReader.nextDouble();
             } else if(key.equals("qntTotal")) {
                 qntTotal = jsonReader.nextDouble();
+            } else if(key.equals("vencimento")) {
+                vencimento.setTime(
+                        new SimpleDateFormat().parse(jsonReader.nextString())
+                );
+            } else if(key.equals("diasValidadeMinima")) {
+                diasValidadeMinima = jsonReader.nextInt();
             } else if(key.equals("dataAlteracao")) {
-                dataAlteracao = LocalDateTime.parse
-                        (jsonReader.nextString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                dataAlteracao.setTime(
+                    new SimpleDateFormat().parse(jsonReader.nextString())
+            );
             } else {
                 jsonReader.skipValue();
             }
@@ -363,6 +381,8 @@ public class ColetaRepository {
                 qntNaEmb,
                 qntEmb,
                 qntTotal,
+                vencimento,
+                diasValidadeMinima,
                 dataAlteracao
         );
     }

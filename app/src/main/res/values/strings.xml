@@ -11,6 +11,8 @@
     <string name="botao_salvar">Salvar</string>
     <string name="botao_cancelar">Cancelar</string>
     <string name="botao_configurar">Configurar</string>
+    <string name="botao_iniciar">Iniciar</string>
+    <string name="botao_nova_coleta">Nova Coleta</string>
 
     <string name="coluna_produto_id">Cód.Produto</string>
 

@@ -1,8 +1,8 @@
 package br.com.supermercadoatalaia.apprcm.domain.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class Coleta implements Serializable {
@@ -15,13 +15,13 @@ public class Coleta implements Serializable {
     private Long pedidoId;
     private String unidade;
     private List<LancamentoColeta> itens = new ArrayList<>();
-    private LocalDateTime dataMovimento;
-    private LocalDateTime dataAlteracao;
+    private Calendar dataMovimento;
+    private Calendar dataAlteracao;
 
     public Coleta() {}
 
     public Coleta(Long id, Long fornecedorId, Long numeroNotaFiscal, Long pedidoId, List<LancamentoColeta> itens,
-                  LocalDateTime dataMovimento, LocalDateTime dataAlteracao, String unidade) {
+                  Calendar dataMovimento, Calendar dataAlteracao, String unidade) {
         super();
         this.id = id;
         this.fornecedorId = fornecedorId;
@@ -81,19 +81,19 @@ public class Coleta implements Serializable {
         this.itens = itens;
     }
 
-    public LocalDateTime getDataMovimento() {
+    public Calendar getDataMovimento() {
         return dataMovimento;
     }
 
-    public void setDataMovimento(LocalDateTime dataMovimento) {
+    public void setDataMovimento(Calendar dataMovimento) {
         this.dataMovimento = dataMovimento;
     }
 
-    public LocalDateTime getDataAlteracao() {
+    public Calendar getDataAlteracao() {
         return dataAlteracao;
     }
 
-    public void setDataAlteracao(LocalDateTime dataAlteracao) {
+    public void setDataAlteracao(Calendar dataAlteracao) {
         this.dataAlteracao = dataAlteracao;
     }
 
