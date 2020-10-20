@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     private void iniciarNovaColeta() {
         habilitarCamposColeta();
 
+        //Posso Instanciar o fornecedor e o pedido para zerar tudo.
         edtCnpjCfp.setText("");
         edtNumeroNotaFiscal.setText("");
         txvDataMvto.setText("");
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         habilitarCamposItem();
 
+        //Posso instanciar com new Produto e colocar 0 nas var Qnts para zerar tudo.
         edtEan.setText("");
         txvDescricao.setText("");
         edtQntEmb.setText("0");
@@ -374,14 +376,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void atualizarItemColeta() {
-        //Fazer igual o atualizarColeta mudando o nome do botão para Salvar....
-        try {
-            setItemParaAlterar();
-            item = coletaController.atualizarItemColeta(coleta, item);
-            //alterar item no Adapter
-            iniciarNovoItem();
-        } catch (IOException e) {
-            Toast.makeText(this, "Erro ao alterar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+        if(btnAlterarItem.getText().equals(R.string.botao_alterar)) {
+            habilitarCamposColeta();
+            btnAlterarItem.setText(R.string.botao_salvar);
+        } else {
+            try {
+                setItemParaAlterar();
+                item = coletaController.atualizarItemColeta(coleta, item);
+                btnAlterarItem.setText(R.string.botao_alterar);
+                //alterar item no Adapter
+                iniciarNovoItem();
+            } catch (IOException e) {
+                Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
