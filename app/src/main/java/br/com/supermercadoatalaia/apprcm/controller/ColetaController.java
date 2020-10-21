@@ -1,6 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.controller;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
@@ -17,38 +18,38 @@ public class ColetaController {
         coletaRepository = new ColetaRepository(configApp);
     }
 
-    public Coleta buscarPorId(Long id) throws IOException {
+    public Coleta buscarPorId(Long id) throws IOException, ParseException {
         return coletaRepository.buscar(id);
     }
 
     public Coleta buscarPorFornecedorNotaFiscal(Long fornecedorId, Long numeroNotaFiscal)
-            throws IOException {
+            throws IOException, ParseException {
         return coletaRepository.buscar(fornecedorId, numeroNotaFiscal);
     }
 
-    public List<Coleta> listarPorFornecedor(Long fornecedorId) throws IOException {
+    public List<Coleta> listarPorFornecedor(Long fornecedorId) throws IOException, ParseException {
         return coletaRepository.listarPorFornecedor(fornecedorId);
     }
 
-    public List<Coleta> listarPorNotaFiscal(Long numeroNotaFiscal) throws IOException {
+    public List<Coleta> listarPorNotaFiscal(Long numeroNotaFiscal) throws IOException, ParseException {
         return coletaRepository.listarPorNf(numeroNotaFiscal);
     }
 
-    public Coleta salvarColeta(Coleta coleta) throws IOException {
+    public Coleta salvarColeta(Coleta coleta) throws IOException, ParseException {
         return coletaRepository.salvar(coleta);
     }
 
     public LancamentoColeta salvarItemColeta(Coleta coleta, LancamentoColeta item)
-            throws IOException {
+            throws IOException, ParseException {
         return coletaRepository.salvarItem(coleta, item);
     }
 
-    public Coleta atualizarColeta(Coleta coleta) throws IOException {
+    public Coleta atualizarColeta(Coleta coleta) throws IOException, ParseException {
         return coletaRepository.atualizar(coleta);
     }
 
     public LancamentoColeta atualizarItemColeta(Coleta coleta, LancamentoColeta item)
-            throws IOException {
+            throws IOException, ParseException {
         return coletaRepository.atualizarItem(coleta, item);
     }
 

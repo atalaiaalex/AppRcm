@@ -25,7 +25,7 @@ public class Pedido implements Serializable {
         this.fornecedorId = fornecedorId;
         this.notaFiscalBaixada = notaFiscalBaixada;
         this.transacaoEntrada = transacaoEntrada;
-        this.setUnidade(unidade);
+        this.unidade = unidade;
     }
 
     public Long getId() {

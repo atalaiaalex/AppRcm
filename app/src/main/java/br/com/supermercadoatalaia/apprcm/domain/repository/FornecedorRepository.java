@@ -1,6 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
 import android.util.JsonReader;
+import android.util.JsonToken;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -99,15 +100,15 @@ public class FornecedorRepository {
             String key = jsonReader.nextName();
             if(key.equals("id")) {
                 id = jsonReader.nextLong();
-            } else if(key.equals("nome")) {
+            } else if(key.equals("nome") && jsonReader.peek() != JsonToken.NULL) {
                 nome = jsonReader.nextString();
-            } else if(key.equals("razaoSocial")) {
+            } else if(key.equals("razaoSocial") && jsonReader.peek() != JsonToken.NULL) {
                 razaoSocial = jsonReader.nextString();
-            } else if(key.equals("cnpjCpf")) {
+            } else if(key.equals("cnpjCpf") && jsonReader.peek() != JsonToken.NULL) {
                 cnpjCpf = jsonReader.nextString();
-            } else if(key.equals("situacao")) {
+            } else if(key.equals("situacao") && jsonReader.peek() != JsonToken.NULL) {
                 situacao = jsonReader.nextString();
-            } else if(key.equals("vinculoCodigo")) {
+            } else if(key.equals("vinculoCodigo") && jsonReader.peek() != JsonToken.NULL) {
                 vinculoCodigo = jsonReader.nextLong();
             } else {
                 jsonReader.skipValue();

@@ -1,6 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
 import android.util.JsonReader;
+import android.util.JsonToken;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -107,19 +108,20 @@ public class PedidoRepository {
         jsonReader.beginObject();
         while(jsonReader.hasNext()) {
             String key = jsonReader.nextName();
-            if(key.equals("id")) {
+
+            if (key.equals("id")) {
                 id = jsonReader.nextLong();
-            } else if(key.equals("transacao")) {
+            } else if (key.equals("transacao") && jsonReader.peek() != JsonToken.NULL) {
                 transacao = jsonReader.nextString();
-            } else if(key.equals("status")) {
+            } else if (key.equals("status") && jsonReader.peek() != JsonToken.NULL) {
                 status = jsonReader.nextString();
-            } else if(key.equals("fornecedorId")) {
+            } else if (key.equals("fornecedorId") && jsonReader.peek() != JsonToken.NULL) {
                 fornecedorId = jsonReader.nextLong();
-            } else if(key.equals("notaFiscalBaixada")) {
+            } else if (key.equals("notaFiscalBaixada") && jsonReader.peek() != JsonToken.NULL) {
                 notaFiscalBaixada = jsonReader.nextLong();
-            } else if(key.equals("transacaoEntrada")) {
+            } else if (key.equals("transacaoEntrada") && jsonReader.peek() != JsonToken.NULL) {
                 transacaoEntrada = jsonReader.nextString();
-            } else if(key.equals("unidade")) {
+            } else if (key.equals("unidade") && jsonReader.peek() != JsonToken.NULL) {
                 unidade = jsonReader.nextString();
             } else {
                 jsonReader.skipValue();

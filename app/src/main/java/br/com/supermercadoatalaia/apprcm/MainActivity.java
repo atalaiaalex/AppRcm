@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -17,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -25,7 +27,6 @@ import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
 import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
 import br.com.supermercadoatalaia.apprcm.controller.ProdutoController;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
-import br.com.supermercadoatalaia.apprcm.core.RcmThreadFactory;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
@@ -63,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
     private EditText edtQntEmb;
     private EditText edtQntTotal;
 
+    private TextView txvRazaoSocial;
+    private TextView txvDataMvto;
+    private TextView txvPedidoId;
+    private TextView txvDescricao;
+    private TextView txvUnidade;
+
     private Button btnBuscarColeta;
     private Button btnAlterarColeta;
     private Button btnExcluirColeta;
@@ -73,11 +80,6 @@ public class MainActivity extends AppCompatActivity {
     private Button btnNovaColeta;
     private Button btnIniciarColeta;
 
-    private TextView txvRazaoSocial;
-    private TextView txvDataMvto;
-    private TextView txvPedidoId;
-    private TextView txvDescricao;
-
     private DatePicker dpkValidade;
 
     private ListView listLancamentoColeta;
@@ -85,11 +87,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         initComponents();
         initPermissoes();
+        initConfigApp();
+    }
 
+    private void initConfigApp() {
         configApp = new ConfigApp(
                 getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath()
         );
@@ -102,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             configurar();
         }
-
     }
 
     private void habilitarCamposColeta() {
@@ -113,7 +116,12 @@ public class MainActivity extends AppCompatActivity {
     private void iniciarNovaColeta() {
         habilitarCamposColeta();
 
-        //Posso Instanciar o fornecedor e o pedido para zerar tudo.
+        fornecedor = new Fornecedor();
+        pedido = new Pedido();
+        coleta = new Coleta();
+        numeroNotaFiscal = 0L;
+        unidade = "";
+
         edtCnpjCfp.setText("");
         edtNumeroNotaFiscal.setText("");
         txvDataMvto.setText("");
@@ -132,11 +140,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void iniciarNovoItem() {
-        Calendar calendar = Calendar.getInstance();
-
         habilitarCamposItem();
 
-        //Posso instanciar com new Produto e colocar 0 nas var Qnts para zerar tudo.
+        produto = new ProdUnidade();
+        item = new LancamentoColeta();
+        vencimento = Calendar.getInstance();
+
+        qntEmb = 0D;
+        qntNaEmb = 0D;
+        qntTotal = 0D;
+
         edtEan.setText("");
         txvDescricao.setText("");
         edtQntEmb.setText("0");
@@ -144,9 +157,9 @@ public class MainActivity extends AppCompatActivity {
         edtQntTotal.setText("0");
 
         dpkValidade.updateDate(
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
+                vencimento.get(Calendar.YEAR),
+                vencimento.get(Calendar.MONTH),
+                vencimento.get(Calendar.DAY_OF_MONTH)
         );
 
         edtEan.requestFocus();
@@ -161,7 +174,11 @@ public class MainActivity extends AppCompatActivity {
                 String.valueOf(pedido.getNotaFiscalBaixada())
         );
         txvRazaoSocial.setText(fornecedor.getRazaoSocial());
-        txvDataMvto.setText(coleta.getDataMovimento().toString());
+        txvDataMvto.setText(String.format(
+                "%1$td/%1$tm/%1$ty %1$tH:%1$tM",
+                coleta.getDataMovimento()
+            )
+        );
         txvPedidoId.setText(
                 String.valueOf(coleta.getPedidoId())
         );
@@ -348,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                 coleta = coletaController.atualizarColeta(coleta);
                 btnAlterarColeta.setText(R.string.botao_alterar);
                 preencherCampos();
-            } catch (IOException e) {
+            } catch (IOException | ParseException e) {
                 Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
@@ -359,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
             setColetaParaSalvar();
             coleta = coletaController.salvarColeta(coleta);
             preencherCampos();
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -370,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
             item = coletaController.salvarItemColeta(coleta, item);
             //add item no Adpater e atualizar o List
             iniciarNovoItem();
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -386,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                 btnAlterarItem.setText(R.string.botao_alterar);
                 //alterar item no Adapter
                 iniciarNovoItem();
-            } catch (IOException e) {
+            } catch (IOException | ParseException e) {
                 Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
@@ -405,7 +422,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             coleta = coletaController.buscarPorId(coleta.getId());
             preencherCampos();
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(this, "Erro ao buscar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -415,7 +432,7 @@ public class MainActivity extends AppCompatActivity {
             setFornecedorPedidoUnidade();
             coleta = coletaController.buscarPorFornecedorNotaFiscal(fornecedor.getId(), numeroNotaFiscal);
             preencherCampos();
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(this, "Erro ao buscar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -455,13 +472,10 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode == LeitorActivity.SUCESSO) {
                     //Dados vindo da intent chamada em modo de espera de resultado.
                     if (data != null) {
+                        iniciarNovoItem();
                         edtEan.setText(data.getStringExtra(LeitorActivity.LEITURA));
-                        txvDescricao.setText("");
-                        qntEmb = 0D;
-                        qntNaEmb = 0D;
-                        qntTotal = 0D;
 
-                        new RcmThreadFactory().newThread(new Runnable() {
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
@@ -475,7 +489,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 preencherCamposItem();
                             }
-                        }).start();
+                        });
                     } else {
                         Toast.makeText(
                                 this,
@@ -495,12 +509,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initComponents() {
+        setContentView(R.layout.activity_main);
+
         edtCnpjCfp = findViewById(R.id.edtCnpjCfp);
         edtNumeroNotaFiscal = findViewById(R.id.edtNumeroNotaFiscal);
         edtEan = findViewById(R.id.edtEan);
         edtQntNaEmb = findViewById(R.id.edtQntNaEmb);
         edtQntEmb = findViewById(R.id.edtQntEmb);
         edtQntTotal = findViewById(R.id.edtQntTotal);
+
+        txvRazaoSocial = findViewById(R.id.txvRazaoSocial);
+        txvDataMvto = findViewById(R.id.txvDataMvto);
+        txvPedidoId = findViewById(R.id.txvPedidoId);
+        txvDescricao = findViewById(R.id.txvDescricao);
+        txvUnidade = findViewById(R.id.txvUnidade);
 
         btnBuscarColeta = findViewById(R.id.btnBuscarColeta);
         btnAlterarColeta = findViewById(R.id.btnAlterarColeta);
@@ -511,11 +533,6 @@ public class MainActivity extends AppCompatActivity {
         btnLancar = findViewById(R.id.btnLancar);
         btnNovaColeta = findViewById(R.id.btnNovaColeta);
         btnIniciarColeta = findViewById(R.id.btnIniciarColeta);
-
-        txvRazaoSocial = findViewById(R.id.txvRazaoSocial);
-        txvDataMvto = findViewById(R.id.txvDataMvto);
-        txvPedidoId = findViewById(R.id.txvPedidoId);
-        txvDescricao = findViewById(R.id.txvDescricao);
 
         dpkValidade = findViewById(R.id.dpkValidade);
 
@@ -571,27 +588,6 @@ public class MainActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(hasFocus) {
                     abrirLeitura();
-                } else { //Esse trecho do else deve ficar dentro de um botão lançar, para só ativar depois de preencher os campos
-                    //necessários, ficando a cargo do usuário saber o momento de apertar este botão.
-                    try {
-
-
-                        //Teste só da busca de produto, preciso de uma unidade, que é seta pelo pedido quando inicio a coleta
-                        //devo só permitir interajir com o produto depois de encontrado o fornecedor e o pedido
-                        setUnidade("002");
-
-
-
-
-                        setProdutoPorEan();
-                    } catch (IOException e) {
-                        Toast.makeText(
-                                getApplicationContext(),
-                                "Erro na conexão!!!\n" + e.getMessage(),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                    preencherCamposItem();
                 }
             }
         };
@@ -616,75 +612,115 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View.OnClickListener btnBuscarColetaPorFornecedorNotaFiscal_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                buscarColetaPorFornecedorNotaFiscal();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        buscarColetaPorFornecedorNotaFiscal();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnBuscarColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                buscarColeta();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        buscarColeta();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnExcluirItemColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                deletarItemColeta();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        deletarItemColeta();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnAlterarItemColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                atualizarItemColeta();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        atualizarItemColeta();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnSalvarItemColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                salvarItemColeta();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        salvarItemColeta();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnSalvarColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                salvarColeta();
-                iniciarNovoItem();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        salvarColeta();
+                        iniciarNovoItem();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnAlterarColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                atualizarColeta();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        atualizarColeta();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 
     private View.OnClickListener btnExcluirColeta_Click() {
-        return new Botao(this){
+        return new View.OnClickListener() {
             @Override
-            protected void funcao() {
-                deletarColeta();
+            public void onClick(View view) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        deletarColeta();
+                    }
+                });
             }
-        }.construir();
+        };
     }
 }

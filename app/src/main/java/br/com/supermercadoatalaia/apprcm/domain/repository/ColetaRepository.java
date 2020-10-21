@@ -3,6 +3,7 @@ package br.com.supermercadoatalaia.apprcm.domain.repository;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,6 +12,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
@@ -20,6 +22,11 @@ import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 
 public class ColetaRepository {
+
+    private static final String FORMATO_DATA_HORA = "yyyy-MM-dd'T'HH:mm:ss.SSSSS";
+                                                    //"2020-10-21'T'11:26:14.25959"
+    private static final String FORMATO_DATA = "yyyy-MM-dd";
+
     private final ApiConsumer apiConsumer;
 
     public ColetaRepository(ConfigApp configApp) throws IOException {
@@ -283,29 +290,31 @@ public class ColetaRepository {
         Long pedidoId = 0L;
         String unidade = "";
         List<LancamentoColeta> itens = new ArrayList<>();
-        Calendar dataMovimento = null;
-        Calendar dataAlteracao = null;
+        Calendar dataMovimento = Calendar.getInstance();
+        Calendar dataAlteracao = Calendar.getInstance();
 
         jsonReader.beginObject();
         while (jsonReader.hasNext()) {
             String key = jsonReader.nextName();
             if (key.equals("id")) {
                 id = jsonReader.nextLong();
-            } else if(key.equals("fornecedorId")) {
+            } else if(key.equals("fornecedorId") && jsonReader.peek() != JsonToken.NULL) {
                 fornecedorId = jsonReader.nextLong();
-            } else if(key.equals("numeroNotaFiscal")) {
+            } else if(key.equals("numeroNotaFiscal") && jsonReader.peek() != JsonToken.NULL) {
                 numeroNotaFiscal = jsonReader.nextLong();
-            } else if(key.equals("pedidoId")) {
+            } else if(key.equals("pedidoId") && jsonReader.peek() != JsonToken.NULL) {
                 pedidoId = jsonReader.nextLong();
-            } else if(key.equals("unidade")) {
+            } else if(key.equals("unidade") && jsonReader.peek() != JsonToken.NULL) {
                 unidade = jsonReader.nextString();
-            } else if(key.equals("dataMovimento")) {
+            } else if(key.equals("dataMovimento") && jsonReader.peek() != JsonToken.NULL) {
+                //Log.i("DataMovimento API", new Date().toString()); //Devo transformar a data para GMT+00:00, e por no banco, cada aplicativo
+                    //deve se responsabilizar por adicionar o seu GMT tanto para ler quanto para escrever as datas.
                 dataMovimento.setTime(
-                        new SimpleDateFormat().parse(jsonReader.nextString())
+                        new SimpleDateFormat(FORMATO_DATA_HORA).parse(jsonReader.nextString())
                 );
-            } else if(key.equals("dataAlteracao")) {
+            } else if(key.equals("dataAlteracao") && jsonReader.peek() != JsonToken.NULL) {
                 dataAlteracao.setTime(
-                        new SimpleDateFormat().parse(jsonReader.nextString())
+                        new SimpleDateFormat(FORMATO_DATA_HORA).parse(jsonReader.nextString())
                 );
             } else if(key.equals("itens") && jsonReader.peek() != JsonToken.NULL) {
                 jsonReader.beginArray();
@@ -342,32 +351,32 @@ public class ColetaRepository {
         Double qntNaEmb = 0.0;
         Double qntEmb = 0.0;
         Double qntTotal = 0.0;
-        Calendar vencimento = null;
+        Calendar vencimento = Calendar.getInstance();
         Integer diasValidadeMinima = 0;
-        Calendar dataAlteracao = null;
+        Calendar dataAlteracao = Calendar.getInstance();
 
         jsonReader.beginObject();
         while (jsonReader.hasNext()) {
             String key = jsonReader.nextName();
             if(key.equals("id")) {
                 id = jsonReader.nextLong();
-            } else if(key.equals("produtoId")) {
+            } else if(key.equals("produtoId") && jsonReader.peek() != JsonToken.NULL) {
                 produtoId = jsonReader.nextLong();
-            } else if(key.equals("qntNaEmb")) {
+            } else if(key.equals("qntNaEmb") && jsonReader.peek() != JsonToken.NULL) {
                 qntNaEmb = jsonReader.nextDouble();
-            } else if(key.equals("qntEmb")) {
+            } else if(key.equals("qntEmb") && jsonReader.peek() != JsonToken.NULL) {
                 qntEmb = jsonReader.nextDouble();
-            } else if(key.equals("qntTotal")) {
+            } else if(key.equals("qntTotal") && jsonReader.peek() != JsonToken.NULL) {
                 qntTotal = jsonReader.nextDouble();
-            } else if(key.equals("vencimento")) {
+            } else if(key.equals("vencimento") && jsonReader.peek() != JsonToken.NULL) {
                 vencimento.setTime(
-                        new SimpleDateFormat().parse(jsonReader.nextString())
+                        new SimpleDateFormat(FORMATO_DATA).parse(jsonReader.nextString())
                 );
-            } else if(key.equals("diasValidadeMinima")) {
+            } else if(key.equals("diasValidadeMinima") && jsonReader.peek() != JsonToken.NULL) {
                 diasValidadeMinima = jsonReader.nextInt();
-            } else if(key.equals("dataAlteracao")) {
+            } else if(key.equals("dataAlteracao") && jsonReader.peek() != JsonToken.NULL) {
                 dataAlteracao.setTime(
-                    new SimpleDateFormat().parse(jsonReader.nextString())
+                    new SimpleDateFormat(FORMATO_DATA_HORA).parse(jsonReader.nextString())
             );
             } else {
                 jsonReader.skipValue();
