@@ -24,7 +24,6 @@ import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 public class ColetaRepository {
 
     private static final String FORMATO_DATA_HORA = "yyyy-MM-dd'T'HH:mm:ss.SSSSS";
-                                                    //"2020-10-21'T'11:26:14.25959"
     private static final String FORMATO_DATA = "yyyy-MM-dd";
 
     private final ApiConsumer apiConsumer;
@@ -222,10 +221,14 @@ public class ColetaRepository {
         jsonWriter.name("pedidoId").value(coleta.getPedidoId());
         jsonWriter.name("unidade").value(coleta.getUnidade());
         if(coleta.getDataMovimento() != null) {
-            jsonWriter.name("dataMovimento").value(coleta.getDataMovimento().toString());
+            jsonWriter.name("dataMovimento").value(
+                    new SimpleDateFormat(FORMATO_DATA_HORA).format(coleta.getDataMovimento().getTime())
+            );
         }
         if(coleta.getDataAlteracao() != null) {
-            jsonWriter.name("dataAlteracao").value(coleta.getDataAlteracao().toString());
+            jsonWriter.name("dataAlteracao").value(
+                    new SimpleDateFormat(FORMATO_DATA_HORA).format(coleta.getDataAlteracao().getTime())
+            );
         }
         if(coleta.getItens().isEmpty()) {
             jsonWriter.name("itens").nullValue();
@@ -260,11 +263,15 @@ public class ColetaRepository {
         jsonWriter.name("qntEmb").value(item.getQntEmb());
         jsonWriter.name("qntTotal").value(item.getQntTotal());
         if(item.getVencimento() != null) {
-            jsonWriter.name("vencimento").value(item.getVencimento().toString());
+            jsonWriter.name("vencimento").value(
+                    new SimpleDateFormat(FORMATO_DATA).format(item.getVencimento().getTime())
+            );
         }
         jsonWriter.name("diasValidadeMinima").value(item.getDiasValidadeMinima());
         if(item.getDataAlteracao() != null) {
-            jsonWriter.name("dataAlteracao").value(item.getDataAlteracao().toString());
+            jsonWriter.name("dataAlteracao").value(
+                    new SimpleDateFormat(FORMATO_DATA_HORA).format(item.getDataAlteracao().getTime())
+            );
         }
         jsonWriter.endObject();
 

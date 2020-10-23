@@ -131,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
         txvRazaoSocial.setText("");
 
         edtCnpjCfp.requestFocus();
+
+        btnAlterarColeta.setText(R.string.botao_alterar);
+        btnAlterarItem.setText(R.string.botao_alterar);
     }
 
     private void habilitarCamposItem() {
@@ -377,7 +380,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void atualizarColeta() {
-        if(btnAlterarColeta.getText().equals(R.string.botao_alterar)) {
+        String repAlterar = getResources().getString(R.string.botao_alterar);
+        if(btnAlterarColeta.getText().toString().equals(repAlterar)) {
             habilitarCamposItem();
             btnAlterarColeta.setText(R.string.botao_salvar);
         } else {
@@ -414,8 +418,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void atualizarItemColeta() {
-        if(btnAlterarItem.getText().equals(R.string.botao_alterar)) {
-            habilitarCamposColeta();
+        String repAlterar = getResources().getString(R.string.botao_alterar);
+        if(btnAlterarItem.getText().toString().equals(repAlterar)) {
+            habilitarCamposItem();
             btnAlterarItem.setText(R.string.botao_salvar);
         } else {
             try {

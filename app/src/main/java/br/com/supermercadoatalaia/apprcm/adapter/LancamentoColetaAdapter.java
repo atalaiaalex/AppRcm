@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Locale;
 
 import br.com.supermercadoatalaia.apprcm.R;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
@@ -58,11 +59,11 @@ public class LancamentoColetaAdapter extends BaseAdapter {
         if(!itens.isEmpty()) {
             LancamentoColeta item = getItem(i);
 
-            txvListItemId.setText(String.format("$d",item.getId()));
+            txvListItemId.setText(String.format("%d",item.getProdutoId()));
             txvListItemDescricao.setText(item.getProdutoDescricao());
-            txvListItemQntNaEmb.setText(String.format("$e", item.getQntNaEmb()));
-            txvListItemQntEmb.setText(String.format("$e", item.getQntEmb()));
-            txvListItemQntTotal.setText(String.format("$e", item.getQntTotal()));
+            txvListItemQntNaEmb.setText(String.format("%,.2f", item.getQntNaEmb()));
+            txvListItemQntEmb.setText(String.format("%,.2f", item.getQntEmb()));
+            txvListItemQntTotal.setText(String.format("%,.2f", item.getQntTotal()));
             txvListItemVencimento.setText(String.format("%1$te/%1$tm/%1$ty", item.getVencimento()));
         }
 
