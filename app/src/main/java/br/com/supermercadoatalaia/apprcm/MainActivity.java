@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -22,6 +23,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import br.com.supermercadoatalaia.apprcm.adapter.LancamentoColetaAdapter;
 import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
 import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
 import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
@@ -140,6 +142,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void iniciarNovoItem() {
+        listLancamentoColeta.setAdapter(
+                new LancamentoColetaAdapter(coleta.getItens(), this)
+        );
+
         habilitarCamposItem();
 
         produto = new ProdUnidade();
@@ -177,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         txvDataMvto.setText(String.format(
                 "%1$td/%1$tm/%1$ty %1$tH:%1$tM",
                 coleta.getDataMovimento()
-            )
+                )
         );
         txvPedidoId.setText(
                 String.valueOf(coleta.getPedidoId())
@@ -186,11 +192,24 @@ public class MainActivity extends AppCompatActivity {
         edtCnpjCfp.setEnabled(false);
         edtNumeroNotaFiscal.setEnabled(false);
 
-        //usar metodo Preencher Adpater do List LancamentoColeta com o primeiro item
+        listLancamentoColeta.setAdapter(
+                new LancamentoColetaAdapter(coleta.getItens(), this)
+        );
     }
 
-    //metódo Preencher Adpater do List LancamentoColeta
-    //para ser usado a cada click no list, setando as variaveis globais referente ao item
+    private void preencherCamposItensDoList() {
+        try {
+            setProduto(produtoController.buscarPorId(item.getProdutoId(), pedido.getUnidade()));
+        } catch (IOException e) {
+            Toast.makeText(this, "Erro ao localizar produto!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+        qntTotal = item.getQntTotal();
+        qntNaEmb = item.getQntNaEmb();
+        qntEmb = item.getQntEmb();
+        vencimento = item.getVencimento();
+
+        preencherCamposItem();
+    }
 
     private void preencherCamposItem() {
         edtEan.setText(produto.getEan());
@@ -252,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
                 new LancamentoColeta(
                     null,
                     produto.getId(),
+                    produto.getDescricao(),
                     qntNaEmb,
                     qntEmb,
                     qntTotal,
@@ -269,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
                 new LancamentoColeta(
                         item.getId(),
                         produto.getId(),
+                        produto.getDescricao(),
                         qntNaEmb,
                         qntEmb,
                         qntTotal,
@@ -385,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             setItemParaSalvar();
             item = coletaController.salvarItemColeta(coleta, item);
-            //add item no Adpater e atualizar o List
+            coleta.getItens().add(item);
             iniciarNovoItem();
         } catch (IOException | ParseException e) {
             Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
@@ -399,9 +420,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             try {
                 setItemParaAlterar();
+                int indexItem = coleta.getItens().indexOf(item);
                 item = coletaController.atualizarItemColeta(coleta, item);
                 btnAlterarItem.setText(R.string.botao_alterar);
-                //alterar item no Adapter
+                coleta.getItens().set(indexItem, item);
                 iniciarNovoItem();
             } catch (IOException | ParseException e) {
                 Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -536,7 +558,7 @@ public class MainActivity extends AppCompatActivity {
 
         dpkValidade = findViewById(R.id.dpkValidade);
 
-        //listLancamentoColeta = findViewById(R.id.listLancamentoColeta);
+        listLancamentoColeta = findViewById(R.id.listLancamentoColeta);
 
         btnBuscarColeta.setOnClickListener(btnBuscarColetaPorFornecedorNotaFiscal_Click());
         btnAlterarColeta.setOnClickListener(btnAlterarColeta_Click());
@@ -549,9 +571,11 @@ public class MainActivity extends AppCompatActivity {
         btnNovaColeta.setOnClickListener(btnNovaColeta_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
+
+        listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
     }
 
-    public void configurar() {
+    private void configurar() {
         CaixaDialogo dialogo = new CaixaDialogo(
                 "Path Server Host",
                 configApp
@@ -580,6 +604,16 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSAO_IO);
             }
         }
+    }
+
+    private AdapterView.OnItemClickListener listLancamentoColeta_ItemClick() {
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                setItem((LancamentoColeta) adapterView.getItemAtPosition(i));
+                preencherCamposItensDoList();
+            }
+        };
     }
 
     private View.OnFocusChangeListener edtEan_FocusChange() {
