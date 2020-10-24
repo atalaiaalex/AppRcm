@@ -3,6 +3,7 @@ package br.com.supermercadoatalaia.apprcm.controller;
 import java.io.IOException;
 
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
 import br.com.supermercadoatalaia.apprcm.domain.repository.ProdUnidadeRepository;
 
@@ -13,11 +14,11 @@ public class ProdutoController {
         prodUnidadeRepository = new ProdUnidadeRepository(configApp);
     }
 
-    public ProdUnidade buscarPorId(Long id, String unidade) throws IOException {
+    public ProdUnidade buscarPorId(Long id, String unidade) throws ApiException, IOException {
         return prodUnidadeRepository.buscar(id, unidade);
     }
 
-    public ProdUnidade buscarPorEan(String ean, String unidade) throws IOException {
+    public ProdUnidade buscarPorEan(String ean, String unidade) throws ApiException, IOException {
         return prodUnidadeRepository.buscar(ean, unidade);
     }
 }

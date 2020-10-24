@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 public class Coleta implements Serializable {
 
@@ -12,7 +13,7 @@ public class Coleta implements Serializable {
     private Long id;
     private Long fornecedorId;
     private Long numeroNotaFiscal;
-    private Long pedidoId;
+    private Set<Long> pedidosId;
     private String unidade;
     private List<LancamentoColeta> itens = new ArrayList<>();
     private Calendar dataMovimento;
@@ -20,13 +21,13 @@ public class Coleta implements Serializable {
 
     public Coleta() {}
 
-    public Coleta(Long id, Long fornecedorId, Long numeroNotaFiscal, Long pedidoId, List<LancamentoColeta> itens,
+    public Coleta(Long id, Long fornecedorId, Long numeroNotaFiscal, Set<Long> pedidosId, List<LancamentoColeta> itens,
                   Calendar dataMovimento, Calendar dataAlteracao, String unidade) {
         super();
         this.id = id;
         this.fornecedorId = fornecedorId;
         this.numeroNotaFiscal = numeroNotaFiscal;
-        this.pedidoId = pedidoId;
+        this.setPedidosId(pedidosId);
         this.itens = itens;
         this.dataMovimento = dataMovimento;
         this.dataAlteracao = dataAlteracao;
@@ -57,12 +58,12 @@ public class Coleta implements Serializable {
         this.numeroNotaFiscal = numeroNotaFiscal;
     }
 
-    public Long getPedidoId() {
-        return pedidoId;
+    public Set<Long> getPedidosId() {
+        return pedidosId;
     }
 
-    public void setPedidoId(Long pedidoId) {
-        this.pedidoId = pedidoId;
+    public void setPedidosId(Set<Long> pedidosId) {
+        this.pedidosId = pedidosId;
     }
 
     public String getUnidade() {

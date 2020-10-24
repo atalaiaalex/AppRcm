@@ -13,11 +13,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 
@@ -33,51 +36,89 @@ public class ColetaRepository {
         apiConsumer.carregarConfiguracao();
     }
 
-    public Coleta buscar(Long id) throws IOException, ParseException {
+    public Coleta buscar(Long id) throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("GET", urlColetaId(id));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        Coleta coleta = instanciarColeta(apiConsumer.getJsonReader(), true);
+        Coleta coleta;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            coleta = instanciarColeta(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return coleta;
     }
 
-    public List<Coleta> listarPorFornecedor(Long fornecedorId) throws IOException, ParseException {
+    public List<Coleta> listarPorFornecedor(Long fornecedorId)
+            throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("GET", urlColetaFornecedorId(fornecedorId));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        List<Coleta> coletas = instanciarListaColeta(apiConsumer.getJsonReader());
+        List<Coleta> coletas;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            coletas = instanciarListaColeta(apiConsumer.getJsonReader());
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return coletas;
     }
 
-    public List<Coleta> listarPorNf(Long numeroNotaFiscal) throws IOException, ParseException {
+    public List<Coleta> listarPorNf(Long numeroNotaFiscal)
+            throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("GET", urlColetaNumeroNotaFiscal(numeroNotaFiscal));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        List<Coleta> coletas = instanciarListaColeta(apiConsumer.getJsonReader());
+        List<Coleta> coletas;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            coletas = instanciarListaColeta(apiConsumer.getJsonReader());
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return coletas;
     }
 
     public Coleta buscar(Long fornecedorId, Long numeroNotaFiscal)
-            throws IOException, ParseException {
+            throws ApiException, ParseException, IOException {
         apiConsumer.iniciarConexao("GET",
                 urlColetaFornecedorIdNumeroNotaFiscal(fornecedorId, numeroNotaFiscal)
         );
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        Coleta coleta = instanciarColeta(apiConsumer.getJsonReader(), true);
+        Coleta coleta;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            coleta = instanciarColeta(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return coleta;
 
     }
 
-    public Coleta salvar(Coleta coleta) throws IOException, ParseException {
+    public Coleta salvar(Coleta coleta) throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("POST",
                 new URL(ApiConsumer.REST_COLETAS)
         );
@@ -85,13 +126,22 @@ public class ColetaRepository {
         apiConsumer.addCabecalho("Accept", "application/json");
 
         setColetaToApi(apiConsumer.getJsonWriter(), coleta);
-        coleta = instanciarColeta(apiConsumer.getJsonReader(), true);
+
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            coleta = instanciarColeta(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return coleta;
     }
 
-    public Coleta atualizar(Coleta coleta) throws IOException, ParseException {
+    public Coleta atualizar(Coleta coleta) throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("PUT",
                 urlColetaId(coleta.getId())
         );
@@ -99,26 +149,40 @@ public class ColetaRepository {
         apiConsumer.addCabecalho("Accept", "application/json");
 
         setColetaToApi(apiConsumer.getJsonWriter(), coleta);
-        coleta = instanciarColeta(apiConsumer.getJsonReader(), true);
+
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            coleta = instanciarColeta(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return coleta;
     }
 
-    public HttpResposta deletar(Coleta coleta) throws IOException {
+    public HttpResposta deletar(Coleta coleta) throws ApiException, IOException {
         apiConsumer.iniciarConexao("DELETE",
                 urlColetaId(coleta.getId())
         );
 
-        apiConsumer.processarComResposta();//Precisei chamar para que o request foce efetuado
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() > 300) {
+            throw new ApiException(httpResposta, jsonReader);
+        }
 
         apiConsumer.fecharConexao();
 
-        return apiConsumer.getHttpResposta();
+        return httpResposta;
     }
 
     public LancamentoColeta salvarItem(Coleta coleta, LancamentoColeta item)
-            throws IOException, ParseException {
+            throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("POST",
                 urlColetaLancar(coleta.getId())
         );
@@ -126,14 +190,23 @@ public class ColetaRepository {
         apiConsumer.addCabecalho("Accept", "application/json");
 
         setLancamentoColetaToApi(apiConsumer.getJsonWriter(), item, true);
-        item = instanciarLancamentoColeta(apiConsumer.getJsonReader());
+
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            item = instanciarLancamentoColeta(jsonReader);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return item;
     }
 
     public LancamentoColeta atualizarItem(Coleta coleta, LancamentoColeta item)
-            throws IOException, ParseException {
+            throws ApiException, IOException, ParseException {
         apiConsumer.iniciarConexao("PUT",
                 urlColetaLancarId(coleta.getId(), item.getId())
         );
@@ -141,22 +214,37 @@ public class ColetaRepository {
         apiConsumer.addCabecalho("Accept", "application/json");
 
         setLancamentoColetaToApi(apiConsumer.getJsonWriter(), item, true);
-        item = instanciarLancamentoColeta(apiConsumer.getJsonReader());
+
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            item = instanciarLancamentoColeta(jsonReader);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return item;
     }
 
-    public HttpResposta deletarItem(Coleta coleta, LancamentoColeta item) throws IOException {
+    public HttpResposta deletarItem(Coleta coleta, LancamentoColeta item)
+            throws ApiException, IOException {
         apiConsumer.iniciarConexao("DELETE",
                 urlColetaLancarId(coleta.getId(), item.getId())
         );
 
-        apiConsumer.processarComResposta();//Precisei chamar para que o request foce efetuado
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() > 300) {
+            throw new ApiException(httpResposta, jsonReader);
+        }
 
         apiConsumer.fecharConexao();
 
-        return apiConsumer.getHttpResposta();
+        return httpResposta;
     }
 
     private URL urlColetaId(Long id) throws MalformedURLException {
@@ -218,7 +306,8 @@ public class ColetaRepository {
         jsonWriter.name("id").value(coleta.getId());
         jsonWriter.name("fornecedorId").value(coleta.getFornecedorId());
         jsonWriter.name("numeroNotaFiscal").value(coleta.getNumeroNotaFiscal());
-        jsonWriter.name("pedidoId").value(coleta.getPedidoId());
+        jsonWriter.name("pedidosId");
+        setListPedidosId(jsonWriter, coleta.getPedidosId());
         jsonWriter.name("unidade").value(coleta.getUnidade());
         if(coleta.getDataMovimento() != null) {
             jsonWriter.name("dataMovimento").value(
@@ -240,15 +329,24 @@ public class ColetaRepository {
         jsonWriter.close();
     }
 
+    private void setListPedidosId(JsonWriter jsonWriter, Set<Long> pedidosId)
+            throws IOException {
+
+        jsonWriter.beginArray();
+        for(Long id : pedidosId) {
+            jsonWriter.value(id);
+        }
+        jsonWriter.endArray();
+    }
+
     private void setListaLancamentoColetaToApi(JsonWriter jsonWriter, List<LancamentoColeta> itens)
             throws IOException {
 
+        jsonWriter.beginArray();
         for(LancamentoColeta item : itens) {
-            jsonWriter.beginArray();
             setLancamentoColetaToApi(jsonWriter, item, false);
-            jsonWriter.endArray();
         }
-        jsonWriter.close();
+        jsonWriter.endArray();
     }
 
     private void setLancamentoColetaToApi(JsonWriter jsonWriter, LancamentoColeta item, boolean unico)
@@ -299,7 +397,7 @@ public class ColetaRepository {
         Long id = 0L;
         Long fornecedorId = 0L;
         Long numeroNotaFiscal = 0L;
-        Long pedidoId = 0L;
+        Set<Long> pedidosId = new HashSet<>();
         String unidade = "";
         List<LancamentoColeta> itens = new ArrayList<>();
         Calendar dataMovimento = Calendar.getInstance();
@@ -314,8 +412,12 @@ public class ColetaRepository {
                 fornecedorId = jsonReader.nextLong();
             } else if(key.equals("numeroNotaFiscal") && jsonReader.peek() != JsonToken.NULL) {
                 numeroNotaFiscal = jsonReader.nextLong();
-            } else if(key.equals("pedidoId") && jsonReader.peek() != JsonToken.NULL) {
-                pedidoId = jsonReader.nextLong();
+            } else if(key.equals("pedidosId") && jsonReader.peek() != JsonToken.NULL) {
+                jsonReader.beginArray();
+                while (jsonReader.hasNext()) {
+                    pedidosId.add(jsonReader.nextLong());
+                }
+                jsonReader.endArray();
             } else if(key.equals("unidade") && jsonReader.peek() != JsonToken.NULL) {
                 unidade = jsonReader.nextString();
             } else if(key.equals("dataMovimento") && jsonReader.peek() != JsonToken.NULL) {
@@ -348,7 +450,7 @@ public class ColetaRepository {
                 id,
                 fornecedorId,
                 numeroNotaFiscal,
-                pedidoId,
+                pedidosId,
                 itens,
                 dataMovimento,
                 dataAlteracao,

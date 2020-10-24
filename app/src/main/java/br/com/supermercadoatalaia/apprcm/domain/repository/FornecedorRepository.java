@@ -11,6 +11,8 @@ import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
+import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
 
 public class FornecedorRepository {
@@ -25,7 +27,16 @@ public class FornecedorRepository {
         apiConsumer.iniciarConexao("GET", urlFornecedorId(id));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        Fornecedor fornecedor = instanciarFornecedor(apiConsumer.getJsonReader(), true);
+        Fornecedor fornecedor;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            fornecedor = instanciarFornecedor(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return fornecedor;
@@ -35,7 +46,16 @@ public class FornecedorRepository {
         apiConsumer.iniciarConexao("GET", urlFornecedorCnpjCpf(cnpjCpf));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        Fornecedor fornecedor = instanciarFornecedor(apiConsumer.getJsonReader(), true);
+        Fornecedor fornecedor;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            fornecedor = instanciarFornecedor(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return fornecedor;
@@ -45,7 +65,16 @@ public class FornecedorRepository {
         apiConsumer.iniciarConexao("GET", urlFornecedorVinculo(vinculoCodigo));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        List<Fornecedor> fornecedores = instanciarListaFornecedor(apiConsumer.getJsonReader());
+        List<Fornecedor> fornecedores;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            fornecedores = instanciarListaFornecedor(jsonReader);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return fornecedores;

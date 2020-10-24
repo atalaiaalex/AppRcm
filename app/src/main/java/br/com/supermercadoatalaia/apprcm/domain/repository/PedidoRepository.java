@@ -11,6 +11,8 @@ import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
+import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Pedido;
 
 public class PedidoRepository {
@@ -25,7 +27,16 @@ public class PedidoRepository {
         apiConsumer.iniciarConexao("GET", urlPedidoId(id));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        Pedido pedido = instanciarPedido(apiConsumer.getJsonReader(), true);
+        Pedido pedido;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            pedido = instanciarPedido(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return pedido;
@@ -35,13 +46,22 @@ public class PedidoRepository {
         apiConsumer.iniciarConexao("GET", urlPedidoBaixadosFornecedor(fornecedorId));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        List<Pedido> pedidos = instanciarListaPedido(apiConsumer.getJsonReader());
+        List<Pedido> pedidos;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            pedidos = instanciarListaPedido(jsonReader);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return pedidos;
     }
 
-    public Pedido buscar(Long fornecedorId, Long notaFiscalBaixada) throws IOException {
+    public List<Pedido> buscar(Long fornecedorId, Long notaFiscalBaixada) throws IOException {
         apiConsumer.iniciarConexao(
                 "GET",
                 urlPedidoBaixadosFornecedorNotaFiscal(
@@ -51,10 +71,19 @@ public class PedidoRepository {
         );
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        Pedido pedido = instanciarPedido(apiConsumer.getJsonReader(), true);
+        List<Pedido> pedidos;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            pedidos = instanciarListaPedido(jsonReader);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
-        return pedido;
+        return pedidos;
     }
 
     private URL urlPedidoId(Long id) throws MalformedURLException {

@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import br.com.supermercadoatalaia.apprcm.adapter.LancamentoColetaAdapter;
 import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
@@ -29,6 +32,7 @@ import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
 import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
 import br.com.supermercadoatalaia.apprcm.controller.ProdutoController;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
@@ -49,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Coleta coleta;
     private LancamentoColeta item;
-    private Pedido pedido;
+    private List<Pedido> pedidos;
     private Fornecedor fornecedor;
     private ProdUnidade produto;
     private Long numeroNotaFiscal;
@@ -119,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         habilitarCamposColeta();
 
         fornecedor = new Fornecedor();
-        pedido = new Pedido();
+        pedidos = new ArrayList<>();
         coleta = new Coleta();
         numeroNotaFiscal = 0L;
         unidade = "";
@@ -174,13 +178,13 @@ public class MainActivity extends AppCompatActivity {
         edtEan.requestFocus();
     }
 
-    private void preencherCampos() throws IOException {
+    private void preencherCampos() throws ApiException, IOException {
         setFornecedor(fornecedorController.buscarPorId(coleta.getFornecedorId()));
-        setPedido(pedidoController.buscarPorId(coleta.getPedidoId()));
+        setPedidos(pedidoController.buscarPorFornecedorNotaFiscal(fornecedor.getId() ,coleta.getNumeroNotaFiscal()));
 
         edtCnpjCfp.setText(fornecedor.getCnpjCpf());
         edtNumeroNotaFiscal.setText(
-                String.valueOf(pedido.getNotaFiscalBaixada())
+                String.valueOf(pedidos.get(0).getNotaFiscalBaixada())
         );
         txvRazaoSocial.setText(fornecedor.getRazaoSocial());
         txvDataMvto.setText(String.format(
@@ -189,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         txvPedidoId.setText(
-                String.valueOf(coleta.getPedidoId())
+                setPedidoIds(pedidos).toString()
         );
 
         edtCnpjCfp.setEnabled(false);
@@ -202,10 +206,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void preencherCamposItensDoList() {
         try {
-            setProduto(produtoController.buscarPorId(item.getProdutoId(), pedido.getUnidade()));
+            setProduto(produtoController.buscarPorId(item.getProdutoId(), pedidos.get(0).getUnidade()));
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            Toast.makeText(this, "Erro ao localizar produto!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao buscar produto!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
+
         qntTotal = item.getQntTotal();
         qntNaEmb = item.getQntNaEmb();
         qntEmb = item.getQntEmb();
@@ -248,8 +255,8 @@ public class MainActivity extends AppCompatActivity {
         this.item = item;
     }
 
-    private void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+    private void setPedidos(List<Pedido> pedidos) {
+        this.pedidos = pedidos;
     }
     private void setFornecedor(Fornecedor fornecedor) {
         this.fornecedor = fornecedor;
@@ -258,16 +265,7 @@ public class MainActivity extends AppCompatActivity {
         this.produto = produto;
     }
 
-    private void setQntsValidadeItem() throws IOException {
-        qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
-        qntEmb = Double.valueOf(edtQntEmb.getText().toString());
-        qntTotal = Double.valueOf(edtQntTotal.getText().toString());
-        vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
-
-        setProdutoPorEan();
-    }
-
-    private void setItemParaSalvar() throws IOException {
+    private void setItemParaSalvar() throws ApiException, IOException {
         setQntsValidadeItem();
 
         setItem(
@@ -285,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setItemParaAlterar() throws IOException {
+    private void setItemParaAlterar() throws ApiException, IOException {
         setQntsValidadeItem();
 
         setItem(
@@ -303,13 +301,32 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setProdutoPorEan() throws IOException {
+    private void setQntsValidadeItem() throws ApiException, IOException {
+        qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
+        qntEmb = Double.valueOf(edtQntEmb.getText().toString());
+        qntTotal = Double.valueOf(edtQntTotal.getText().toString());
+        vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
+
+        setProdutoPorEan();
+    }
+
+    private void setProdutoPorEan() throws ApiException, IOException {
         String ean = edtEan.getText().toString();
 
         setProduto(produtoController.buscarPorEan(ean, unidade));
     }
 
-    private void setColetaParaSalvar() throws IOException {
+    private Set<Long> setPedidoIds(List<Pedido> pedidos) {
+        Set<Long> ids = new HashSet<>();
+
+        for(Pedido p : pedidos) {
+            ids.add(p.getId());
+        }
+
+        return ids;
+    }
+
+    private void setColetaParaSalvar() throws ApiException, IOException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -317,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
                         null,
                         fornecedor.getId(),
                         numeroNotaFiscal,
-                        pedido.getId(),
+                        setPedidoIds(pedidos),
                         new ArrayList<LancamentoColeta>(),
                         null,
                         null,
@@ -326,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setColetaParaAlterar() throws IOException {
+    private void setColetaParaAlterar() throws ApiException, IOException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -334,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
                         coleta.getId(),
                         fornecedor.getId(),
                         numeroNotaFiscal,
-                        pedido.getId(),
+                        setPedidoIds(pedidos),
                         coleta.getItens(),
                         coleta.getDataMovimento(),
                         coleta.getDataAlteracao(),
@@ -343,21 +360,21 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setFornecedorPedidoUnidade() throws IOException {
+    private void setFornecedorPedidoUnidade() throws ApiException, IOException {
         String cnpjCfp = edtCnpjCfp.getText().toString();
         setNumeroNotaFiscal(
                 Long.valueOf(edtNumeroNotaFiscal.getText().toString())
         );
 
         setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
-        setPedido(
+        setPedidos(
             pedidoController.buscarPorFornecedorNotaFiscal(
                 fornecedor.getId(),
                 numeroNotaFiscal
             )
         );
 
-        setUnidade(pedido.getUnidade());
+        setUnidade(pedidos.get(0).getUnidade());
     }
 
     private void setNumeroNotaFiscal(Long numeroNotaFiscal) {
@@ -374,8 +391,10 @@ public class MainActivity extends AppCompatActivity {
             setColeta(new Coleta());
             iniciarNovaColeta();
             Toast.makeText(this, "Deletado!!!", Toast.LENGTH_LONG).show();
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            Toast.makeText(this, "Erro ao deletar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao deletar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -390,8 +409,10 @@ public class MainActivity extends AppCompatActivity {
                 coleta = coletaController.atualizarColeta(coleta);
                 btnAlterarColeta.setText(R.string.botao_alterar);
                 preencherCampos();
+            } catch (ApiException apie) {
+                Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
             } catch (IOException | ParseException e) {
-                Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Erro ao alterar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -401,8 +422,10 @@ public class MainActivity extends AppCompatActivity {
             setColetaParaSalvar();
             coleta = coletaController.salvarColeta(coleta);
             preencherCampos();
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
-            Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao salvar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -412,8 +435,10 @@ public class MainActivity extends AppCompatActivity {
             item = coletaController.salvarItemColeta(coleta, item);
             coleta.getItens().add(item);
             iniciarNovoItem();
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
-            Toast.makeText(this, "Erro ao salvar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao salvar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -430,8 +455,10 @@ public class MainActivity extends AppCompatActivity {
                 btnAlterarItem.setText(R.string.botao_alterar);
                 coleta.getItens().set(indexItem, item);
                 iniciarNovoItem();
+            } catch (ApiException apie) {
+                Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
             } catch (IOException | ParseException e) {
-                Toast.makeText(this, "Erro ao alterar!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Erro ao alterar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -440,8 +467,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             coletaController.deletarItemColeta(coleta, item);
             iniciarNovoItem();
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            Toast.makeText(this, "Erro ao deletar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao deletar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -449,8 +478,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             coleta = coletaController.buscarPorId(coleta.getId());
             preencherCampos();
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
-            Toast.makeText(this, "Erro ao buscar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao buscar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -459,8 +490,10 @@ public class MainActivity extends AppCompatActivity {
             setFornecedorPedidoUnidade();
             coleta = coletaController.buscarPorFornecedorNotaFiscal(fornecedor.getId(), numeroNotaFiscal);
             preencherCampos();
+        } catch (ApiException apie) {
+            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
-            Toast.makeText(this, "Erro ao buscar!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro ao buscar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -507,10 +540,12 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 try {
                                     setProdutoPorEan();
+                                } catch (ApiException apie) {
+                                    Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
                                 } catch (IOException e) {
                                     Toast.makeText(
                                             getApplicationContext(),
-                                            "Erro na conexão!!!\n" + e.getMessage(),
+                                            "Erro ao buscar produto!!!\n"+e.getMessage(),
                                             Toast.LENGTH_LONG
                                     ).show();
                                 }
@@ -519,8 +554,8 @@ public class MainActivity extends AppCompatActivity {
                         });
                     } else {
                         Toast.makeText(
-                                this,
-                                "Nenhum Código de barra capturado!",
+                                getApplicationContext(),
+                                "Nenhum EAN capturado!",
                                 Toast.LENGTH_LONG
                         ).show();
                     }

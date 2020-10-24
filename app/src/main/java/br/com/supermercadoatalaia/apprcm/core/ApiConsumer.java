@@ -74,20 +74,17 @@ public class ApiConsumer {
     }
 
     public InputStream processarComResposta() throws IOException {
-        InputStream inputStream = httpURLConnection.getInputStream();
-        HttpCodeResposta = httpURLConnection.getResponseCode();
+        InputStream inputStream;
 
-        if(HttpCodeResposta >= 200 && HttpCodeResposta < 300) {
-            return inputStream;
-        } else if(getHttpResposta().equals(HttpResposta.NAO_ENCONTRADO)){
-            throw new IOException(HttpResposta.NAO_ENCONTRADO.getMensagem());
-        } else if(getHttpResposta().equals(HttpResposta.ERRO)){
-            throw new IOException(HttpResposta.ERRO.getMensagem());
-        } else if(getHttpResposta().equals(HttpResposta.ERRO_SERVIDOR)) {
-            throw new IOException(HttpResposta.ERRO_SERVIDOR.getMensagem());
+        try {
+            inputStream = httpURLConnection.getInputStream();
+            HttpCodeResposta = httpURLConnection.getResponseCode();
+        } catch (IOException e) {
+            inputStream = httpURLConnection.getErrorStream();
+            HttpCodeResposta = httpURLConnection.getResponseCode();
         }
 
-        throw new IOException();
+        return inputStream;
     }
 
     public HttpResposta getHttpResposta() {

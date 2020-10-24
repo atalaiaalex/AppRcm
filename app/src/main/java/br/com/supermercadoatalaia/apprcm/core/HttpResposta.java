@@ -4,11 +4,11 @@ public enum HttpResposta {
     SUCESSO(200, "Sucesso"),
     INCLUIDO(201, "Registro incluído"),
     SEM_CONTEUDO(204, "Sem conteúdo"),
-    ERRO(400, "Erro no pedido"),
+    ERRO(400, "Solicitação incorreta"),
     NAO_ENCONTRADO(404, "Não encontrado"),
     ERRO_SERVIDOR(500, "Erro no servidor"),
-    ERRO_SEM_TRADUCAO(-1, "Erro sem tradução"),
-    RESPOSTA_SEM_TRADUCAO(-2, "Resposta sem tradução");
+    ERRO_SEM_TRADUCAO(-1, "Erro"),
+    RESPOSTA_SEM_TRADUCAO(-2, "Resposta");
 
     /*
     1×× Informational

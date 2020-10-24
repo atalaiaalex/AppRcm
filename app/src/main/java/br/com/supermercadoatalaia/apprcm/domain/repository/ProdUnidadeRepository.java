@@ -11,6 +11,8 @@ import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
+import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
 
 public class ProdUnidadeRepository {
@@ -25,7 +27,16 @@ public class ProdUnidadeRepository {
         apiConsumer.iniciarConexao("GET", urlProdutoIdUnidade(id, unidade));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        ProdUnidade prodUnidade = instanciarProdUnidade(apiConsumer.getJsonReader(), true);
+        ProdUnidade prodUnidade;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            prodUnidade = instanciarProdUnidade(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return prodUnidade;
@@ -35,7 +46,16 @@ public class ProdUnidadeRepository {
         apiConsumer.iniciarConexao("GET", urlProdutoEanUnidade(ean, unidade));
         apiConsumer.addCabecalho("Accept", "application/json");
 
-        ProdUnidade prodUnidade = instanciarProdUnidade(apiConsumer.getJsonReader(), true);
+        ProdUnidade prodUnidade;
+        JsonReader jsonReader = apiConsumer.getJsonReader();
+        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+
+        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
+            prodUnidade = instanciarProdUnidade(jsonReader, true);
+        } else {
+            throw new ApiException(httpResposta, jsonReader);
+        }
+
         apiConsumer.fecharConexao();
 
         return prodUnidade;
