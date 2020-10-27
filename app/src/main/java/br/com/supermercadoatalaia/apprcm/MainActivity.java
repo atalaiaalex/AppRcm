@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -131,6 +132,9 @@ public class MainActivity extends AppCompatActivity {
     private void iniciarNovaColeta() {
         mudarBotoesNovaColeta();
 
+        coleta = new Coleta();
+        coleta.setItens(new ArrayList<LancamentoColeta>());
+
         numeroNotaFiscal = 0L;
         unidade = "";
 
@@ -141,12 +145,10 @@ public class MainActivity extends AppCompatActivity {
         txvRazaoSocial.setText("");
 
         listLancamentoColeta.setAdapter(
-                new LancamentoColetaAdapter(new ArrayList<LancamentoColeta>(), this)
+                new LancamentoColetaAdapter(coleta.getItens(), this)
         );
 
         edtCnpjCfp.requestFocus();
-
-        btnAlterarColeta.setText(R.string.botao_alterar);
     }
 
     private void mudarBotoesNovaColeta() {
@@ -163,8 +165,7 @@ public class MainActivity extends AppCompatActivity {
         desabilitarCamposItem();
     }
 
-    private void
-    mudarBotoesIniciarColeta() {
+    private void mudarBotoesIniciarColeta() {
         btnAlterarColeta.setEnabled(true);
         btnAlterarColeta.setText(R.string.botao_alterar);
         btnExcluirColeta.setEnabled(true);
@@ -314,9 +315,6 @@ public class MainActivity extends AppCompatActivity {
         );
 
         edtEan.requestFocus();
-
-        btnAlterarItem.setText(R.string.botao_alterar);
-        btnLimpar.setText(R.string.botao_limpar);
     }
 
     private void preencherCampos() throws ApiException, IOException {
@@ -363,6 +361,7 @@ public class MainActivity extends AppCompatActivity {
         vencimento = item.getVencimento();
 
         preencherCamposItem();
+        desabilitarCamposItem();
     }
 
     private void preencherCamposItem() {
@@ -383,12 +382,6 @@ public class MainActivity extends AppCompatActivity {
                 vencimento.get(Calendar.MONTH),
                 vencimento.get(Calendar.DAY_OF_MONTH)
         );
-
-        edtEan.setEnabled(false);
-        edtQntEmb.setEnabled(false);
-        edtQntNaEmb.setEnabled(false);
-        edtQntTotal.setEnabled(false);
-        dpkValidade.setEnabled(false);
     }
 
     private void setItemParaSalvar() throws ApiException, IOException {
@@ -455,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
         return ids;
     }
 
-    private void setColetaParaSalvar() throws ApiException, IOException {
+    private void setColetaParaSalvar() throws ApiException, IOException, NumberFormatException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -472,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setColetaParaAlterar() throws ApiException, IOException {
+    private void setColetaParaAlterar() throws ApiException, IOException, NumberFormatException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -489,7 +482,8 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setFornecedorPedidoUnidade() throws ApiException, IOException {
+    private void setFornecedorPedidoUnidade()
+            throws ApiException, IOException, NumberFormatException {
         String cnpjCfp = edtCnpjCfp.getText().toString();
         setNumeroNotaFiscal(
                 Long.valueOf(edtNumeroNotaFiscal.getText().toString())
@@ -544,8 +538,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             setColetaParaSalvar();
             coleta = coletaController.salvarColeta(coleta);
+
+            Log.i("Dentro salvarColeta", "Tá continuando mesmo depois de passar pelo salvar do REST");
+
             preencherCampos();
             mudarBotoesIniciarColeta();
+            iniciarNovoItem();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
@@ -619,6 +617,8 @@ public class MainActivity extends AppCompatActivity {
             mudarBotoesIniciarColeta();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Verifique o cnpj e núm. da NF digitado!\n"+nfe.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
             Toast.makeText(this, "Erro ao buscar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -634,10 +634,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_LEITURA:
+                iniciarNovoItem();
+
                 if (resultCode == LeitorActivity.SUCESSO) {
                     //Dados vindo da intent chamada em modo de espera de resultado.
                     if (data != null) {
-                        iniciarNovoItem();
                         edtEan.setText(data.getStringExtra(LeitorActivity.LEITURA));
                     } else {
                         Toast.makeText(
@@ -763,9 +764,11 @@ public class MainActivity extends AppCompatActivity {
         return new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
-                if(hasFocus) {
+                if(view.equals(edtEan) && hasFocus) {
+                    Log.i("Dentro edtEanFocus", "Ele ganho o focu...");
+
                     abrirLeitura();
-                } else {
+                } else if(view.equals(edtEan)) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -821,20 +824,6 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private View.OnClickListener btnBuscarColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        buscarColeta();
-                    }
-                });
-            }
-        };
-    }
-
     private View.OnClickListener btnExcluirItemColeta_Click() {
         return new View.OnClickListener() {
             @Override
@@ -884,8 +873,9 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Log.i("Dentro btnSalvarColeta", "Foi acionado, espero que com um clique");
+
                         salvarColeta();
-                        iniciarNovoItem();
                     }
                 });
             }

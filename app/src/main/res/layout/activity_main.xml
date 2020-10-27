@@ -35,8 +35,9 @@
             android:tooltipText="@string/hint_nota_fiscal"
             android:inputType="number"
             android:hint="@string/hint_nota_fiscal"
-            android:nextFocusDown="@id/btnIniciarColeta"
-            android:layout_weight="1"/>
+            android:nextFocusDown="@id/edtCnpjCfp"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
     <LinearLayout
