@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -97,34 +96,41 @@ public class MainActivity extends AppCompatActivity {
         initComponents();
         initPermissoes();
         initConfigApp();
+
+        iniciarNovaColeta();
     }
 
-    private void initConfigApp() {
-        configApp = new ConfigApp(
-                getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath()
-        );
-
-        try {
-            coletaController = new ColetaController(configApp);
-            fornecedorController = new FornecedorController(configApp);
-            pedidoController = new PedidoController(configApp);
-            produtoController = new ProdutoController(configApp);
-        } catch (IOException e) {
-            configurar();
-        }
+    private void setNumeroNotaFiscal(Long numeroNotaFiscal) {
+        this.numeroNotaFiscal = numeroNotaFiscal;
     }
 
-    private void habilitarCamposColeta() {
-        edtCnpjCfp.setEnabled(true);
-        edtNumeroNotaFiscal.setEnabled(true);
+    private void setUnidade(String unidade) {
+        this.unidade = unidade;
+    }
+
+    private void setColeta(Coleta coleta) {
+        this.coleta = coleta;
+    }
+
+    private void setItem(LancamentoColeta item) {
+        this.item = item;
+    }
+
+    private void setPedidos(List<Pedido> pedidos) {
+        this.pedidos = pedidos;
+    }
+
+    private void setFornecedor(Fornecedor fornecedor) {
+        this.fornecedor = fornecedor;
+    }
+
+    private void setProduto(ProdUnidade produto) {
+        this.produto = produto;
     }
 
     private void iniciarNovaColeta() {
-        habilitarCamposColeta();
+        mudarBotoesNovaColeta();
 
-        fornecedor = new Fornecedor();
-        pedidos = new ArrayList<>();
-        coleta = new Coleta();
         numeroNotaFiscal = 0L;
         unidade = "";
 
@@ -134,10 +140,144 @@ public class MainActivity extends AppCompatActivity {
         txvPedidoId.setText("");
         txvRazaoSocial.setText("");
 
+        listLancamentoColeta.setAdapter(
+                new LancamentoColetaAdapter(new ArrayList<LancamentoColeta>(), this)
+        );
+
         edtCnpjCfp.requestFocus();
 
         btnAlterarColeta.setText(R.string.botao_alterar);
+    }
+
+    private void mudarBotoesNovaColeta() {
+        btnIniciarColeta.setEnabled(true);
+        btnBuscarColeta.setEnabled(true);
+
+        btnAlterarColeta.setEnabled(false);
+        btnExcluirColeta.setEnabled(false);
+
+        listLancamentoColeta.setEnabled(false);
+
+        habilitarCamposColeta();
+        desabilitarBotoesItem();
+        desabilitarCamposItem();
+    }
+
+    private void
+    mudarBotoesIniciarColeta() {
+        btnAlterarColeta.setEnabled(true);
+        btnAlterarColeta.setText(R.string.botao_alterar);
+        btnExcluirColeta.setEnabled(true);
+        btnExcluirColeta.setText(R.string.botao_excluir);
+        listLancamentoColeta.setEnabled(true);
+
+        btnIniciarColeta.setEnabled(false);
+        btnBuscarColeta.setEnabled(false);
+
+        habilitarCamposItem();
+        desabilitarBotoesItem();
+    }
+
+    private void mudarBotoesAlterarColeta() {
+        btnAlterarColeta.setEnabled(true);
+        btnAlterarColeta.setText(R.string.botao_salvar);
+        btnExcluirColeta.setEnabled(true);
+        btnExcluirColeta.setText(R.string.botao_cancelar);
+
+        btnIniciarColeta.setEnabled(false);
+        btnBuscarColeta.setEnabled(false);
+
+        listLancamentoColeta.setEnabled(false);
+
+        desabilitarBotoesItem();
+        desabilitarCamposItem();
+    }
+
+    private void mudarBotoesBuscaProdutoEan() {
+        btnLancar.setEnabled(true);
+        btnLimpar.setEnabled(true);
+
+        btnAlterarItem.setEnabled(false);
+        btnExcluirItem.setEnabled(false);
+
+        listLancamentoColeta.setEnabled(false);
+
+        habilitarCamposItem();
+    }
+
+    private void mudarBotoesIniciarItem() {
+        listLancamentoColeta.setEnabled(true);
+
         btnAlterarItem.setText(R.string.botao_alterar);
+        btnLimpar.setText(R.string.botao_limpar);
+
+        desabilitarBotoesItem();
+        habilitarCamposItem();
+    }
+
+    private void mudarBotoesAlterarItem() {
+        btnAlterarItem.setEnabled(true);
+        btnAlterarItem.setText(R.string.botao_salvar);
+        btnLimpar.setEnabled(true);
+        btnLimpar.setText(R.string.botao_cancelar);
+
+        btnLancar.setEnabled(false);
+        btnExcluirItem.setEnabled(false);
+
+        habilitarCamposItem();
+    }
+
+    private void mudarBotoesClickList() {
+        habilitarBotoesItem();
+        desabilitarCamposItem();
+
+        btnLancar.setEnabled(false);
+    }
+
+    private void desabilitarBotoesColeta() {
+        btnIniciarColeta.setEnabled(false);
+        btnBuscarColeta.setEnabled(false);
+        btnAlterarColeta.setEnabled(false);
+        btnExcluirColeta.setEnabled(false);
+    }
+
+    private void habilitarBotoesColeta() {
+        btnIniciarColeta.setEnabled(true);
+        btnBuscarColeta.setEnabled(true);
+        btnAlterarColeta.setEnabled(true);
+        btnExcluirColeta.setEnabled(true);
+    }
+
+    private void desabilitarCamposColeta() {
+        edtCnpjCfp.setEnabled(false);
+        edtNumeroNotaFiscal.setEnabled(false);
+    }
+
+    private void habilitarCamposColeta() {
+        edtCnpjCfp.setEnabled(true);
+        edtNumeroNotaFiscal.setEnabled(true);
+    }
+
+    private void desabilitarBotoesItem() {
+        btnLancar.setEnabled(false);
+        btnLimpar.setEnabled(false);
+        btnAlterarItem.setEnabled(false);
+        btnExcluirItem.setEnabled(false);
+    }
+
+    private void habilitarBotoesItem() {
+        btnLancar.setEnabled(true);
+        btnLimpar.setEnabled(true);
+        btnAlterarItem.setEnabled(true);
+        btnExcluirItem.setEnabled(true);
+    }
+
+    private void desabilitarCamposItem() {
+        edtEan.setEnabled(false);
+        edtQntEmb.setEnabled(false);
+        edtQntNaEmb.setEnabled(false);
+        edtQntTotal.setEnabled(false);
+        dpkValidade.setEnabled(false);
     }
 
     private void habilitarCamposItem() {
@@ -155,8 +295,6 @@ public class MainActivity extends AppCompatActivity {
 
         habilitarCamposItem();
 
-        produto = new ProdUnidade();
-        item = new LancamentoColeta();
         vencimento = Calendar.getInstance();
 
         qntEmb = 0D;
@@ -165,9 +303,9 @@ public class MainActivity extends AppCompatActivity {
 
         edtEan.setText("");
         txvDescricao.setText("");
-        edtQntEmb.setText("0");
-        edtQntNaEmb.setText("0");
-        edtQntTotal.setText("0");
+        edtQntEmb.setText("");
+        edtQntNaEmb.setText("");
+        edtQntTotal.setText("");
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -176,10 +314,15 @@ public class MainActivity extends AppCompatActivity {
         );
 
         edtEan.requestFocus();
+
+        btnAlterarItem.setText(R.string.botao_alterar);
+        btnLimpar.setText(R.string.botao_limpar);
     }
 
     private void preencherCampos() throws ApiException, IOException {
+        setFornecedor(new Fornecedor());
         setFornecedor(fornecedorController.buscarPorId(coleta.getFornecedorId()));
+        setPedidos(new ArrayList<Pedido>());
         setPedidos(pedidoController.buscarPorFornecedorNotaFiscal(fornecedor.getId() ,coleta.getNumeroNotaFiscal()));
 
         edtCnpjCfp.setText(fornecedor.getCnpjCpf());
@@ -206,6 +349,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void preencherCamposItensDoList() {
         try {
+            setProduto(new ProdUnidade());
             setProduto(produtoController.buscarPorId(item.getProdutoId(), pedidos.get(0).getUnidade()));
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
@@ -245,24 +389,6 @@ public class MainActivity extends AppCompatActivity {
         edtQntNaEmb.setEnabled(false);
         edtQntTotal.setEnabled(false);
         dpkValidade.setEnabled(false);
-    }
-
-    private void setColeta(Coleta coleta) {
-        this.coleta = coleta;
-    }
-
-    private void setItem(LancamentoColeta item) {
-        this.item = item;
-    }
-
-    private void setPedidos(List<Pedido> pedidos) {
-        this.pedidos = pedidos;
-    }
-    private void setFornecedor(Fornecedor fornecedor) {
-        this.fornecedor = fornecedor;
-    }
-    private void setProduto(ProdUnidade produto) {
-        this.produto = produto;
     }
 
     private void setItemParaSalvar() throws ApiException, IOException {
@@ -307,13 +433,16 @@ public class MainActivity extends AppCompatActivity {
         qntTotal = Double.valueOf(edtQntTotal.getText().toString());
         vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
 
-        setProdutoPorEan();
+        buscarProdutoPorEan();
     }
 
-    private void setProdutoPorEan() throws ApiException, IOException {
+    private void buscarProdutoPorEan() throws ApiException, IOException {
         String ean = edtEan.getText().toString();
 
+        setProduto(new ProdUnidade());
         setProduto(produtoController.buscarPorEan(ean, unidade));
+
+        mudarBotoesBuscaProdutoEan();
     }
 
     private Set<Long> setPedidoIds(List<Pedido> pedidos) {
@@ -366,7 +495,9 @@ public class MainActivity extends AppCompatActivity {
                 Long.valueOf(edtNumeroNotaFiscal.getText().toString())
         );
 
+        setFornecedor(new Fornecedor());
         setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
+        setPedidos(new ArrayList<Pedido>());
         setPedidos(
             pedidoController.buscarPorFornecedorNotaFiscal(
                 fornecedor.getId(),
@@ -375,14 +506,6 @@ public class MainActivity extends AppCompatActivity {
         );
 
         setUnidade(pedidos.get(0).getUnidade());
-    }
-
-    private void setNumeroNotaFiscal(Long numeroNotaFiscal) {
-        this.numeroNotaFiscal = numeroNotaFiscal;
-    }
-
-    private void setUnidade(String unidade) {
-        this.unidade = unidade;
     }
 
     private void deletarColeta() {
@@ -401,13 +524,13 @@ public class MainActivity extends AppCompatActivity {
     private void atualizarColeta() {
         String repAlterar = getResources().getString(R.string.botao_alterar);
         if(btnAlterarColeta.getText().toString().equals(repAlterar)) {
-            habilitarCamposItem();
-            btnAlterarColeta.setText(R.string.botao_salvar);
+            habilitarCamposColeta();
+            mudarBotoesAlterarColeta();
         } else {
             try {
                 setColetaParaAlterar();
                 coleta = coletaController.atualizarColeta(coleta);
-                btnAlterarColeta.setText(R.string.botao_alterar);
+                mudarBotoesIniciarColeta();
                 preencherCampos();
             } catch (ApiException apie) {
                 Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
@@ -422,6 +545,7 @@ public class MainActivity extends AppCompatActivity {
             setColetaParaSalvar();
             coleta = coletaController.salvarColeta(coleta);
             preencherCampos();
+            mudarBotoesIniciarColeta();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
@@ -434,6 +558,7 @@ public class MainActivity extends AppCompatActivity {
             setItemParaSalvar();
             item = coletaController.salvarItemColeta(coleta, item);
             coleta.getItens().add(item);
+            mudarBotoesIniciarItem();
             iniciarNovoItem();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
@@ -445,15 +570,14 @@ public class MainActivity extends AppCompatActivity {
     private void atualizarItemColeta() {
         String repAlterar = getResources().getString(R.string.botao_alterar);
         if(btnAlterarItem.getText().toString().equals(repAlterar)) {
-            habilitarCamposItem();
-            btnAlterarItem.setText(R.string.botao_salvar);
+            mudarBotoesAlterarItem();
         } else {
             try {
                 setItemParaAlterar();
                 int indexItem = coleta.getItens().indexOf(item);
                 item = coletaController.atualizarItemColeta(coleta, item);
-                btnAlterarItem.setText(R.string.botao_alterar);
                 coleta.getItens().set(indexItem, item);
+                mudarBotoesIniciarItem();
                 iniciarNovoItem();
             } catch (ApiException apie) {
                 Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
@@ -466,6 +590,7 @@ public class MainActivity extends AppCompatActivity {
     private void deletarItemColeta() {
         try {
             coletaController.deletarItemColeta(coleta, item);
+            mudarBotoesIniciarItem();
             iniciarNovoItem();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
@@ -478,6 +603,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             coleta = coletaController.buscarPorId(coleta.getId());
             preencherCampos();
+            mudarBotoesIniciarColeta();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
@@ -490,6 +616,7 @@ public class MainActivity extends AppCompatActivity {
             setFornecedorPedidoUnidade();
             coleta = coletaController.buscarPorFornecedorNotaFiscal(fornecedor.getId(), numeroNotaFiscal);
             preencherCampos();
+            mudarBotoesIniciarColeta();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
@@ -503,28 +630,6 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_LEITURA);
     }
 
-    /**
-     * Called when an activity you launched exits, giving you the requestCode
-     * you started it with, the resultCode it returned, and any additional
-     * data from it.  The <var>resultCode</var> will be
-     * {@link #RESULT_CANCELED} if the activity explicitly returned that,
-     * didn't return any result, or crashed during its operation.
-     * <p/>
-     * <p>You will receive this call immediately before onResume() when your
-     * activity is re-starting.
-     * <p/>
-     *
-     * @param requestCode The integer request code originally supplied to
-     *                    startActivityForResult(), allowing you to identify who this
-     *                    result came from.
-     * @param resultCode  The integer result code returned by the child activity
-     *                    through its setResult().
-     * @param data        An Intent, which can return result data to the caller
-     *                    (various data can be attached to Intent "extras").
-     * @see #startActivityForResult
-     * @see #createPendingResult
-     * @see #setResult(int)
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -534,24 +639,6 @@ public class MainActivity extends AppCompatActivity {
                     if (data != null) {
                         iniciarNovoItem();
                         edtEan.setText(data.getStringExtra(LeitorActivity.LEITURA));
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    setProdutoPorEan();
-                                } catch (ApiException apie) {
-                                    Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
-                                } catch (IOException e) {
-                                    Toast.makeText(
-                                            getApplicationContext(),
-                                            "Erro ao buscar produto!!!\n"+e.getMessage(),
-                                            Toast.LENGTH_LONG
-                                    ).show();
-                                }
-                                preencherCamposItem();
-                            }
-                        });
                     } else {
                         Toast.makeText(
                                 getApplicationContext(),
@@ -624,6 +711,21 @@ public class MainActivity extends AppCompatActivity {
         dialogo.show(getSupportFragmentManager(), "DialogoHostApi");
     }
 
+    private void initConfigApp() {
+        configApp = new ConfigApp(
+                getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath()
+        );
+
+        try {
+            coletaController = new ColetaController(configApp);
+            fornecedorController = new FornecedorController(configApp);
+            pedidoController = new PedidoController(configApp);
+            produtoController = new ProdutoController(configApp);
+        } catch (IOException e) {
+            configurar();
+        }
+    }
+
     private void initPermissoes () {
         //USUARIO DAR A PERMISSAO PARA LER
         if (ContextCompat.checkSelfPermission(this,
@@ -651,6 +753,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 setItem((LancamentoColeta) adapterView.getItemAtPosition(i));
+                mudarBotoesClickList();
                 preencherCamposItensDoList();
             }
         };
@@ -662,6 +765,24 @@ public class MainActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(hasFocus) {
                     abrirLeitura();
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                        try {
+                            buscarProdutoPorEan();
+                        } catch (ApiException apie) {
+                            Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
+                        } catch (IOException e) {
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "Erro ao buscar produto!!!\n"+e.getMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                        preencherCamposItem();
+                        }
+                    });
                 }
             }
         };
@@ -680,6 +801,7 @@ public class MainActivity extends AppCompatActivity {
         return new View.OnClickListener(){
             @Override
             public void onClick(View view) {
+                mudarBotoesIniciarItem();
                 iniciarNovoItem();
             }
         };
