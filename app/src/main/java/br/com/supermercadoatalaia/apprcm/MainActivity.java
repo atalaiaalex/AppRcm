@@ -99,6 +99,11 @@ public class MainActivity extends AppCompatActivity {
         initConfigApp();
 
         iniciarNovaColeta();
+
+        qntTotal = 0D;
+        qntEmb = 0D;
+        qntNaEmb = 0D;
+        vencimento = Calendar.getInstance();
     }
 
     private void setNumeroNotaFiscal(Long numeroNotaFiscal) {
@@ -133,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
         mudarBotoesNovaColeta();
 
         coleta = new Coleta();
-        coleta.setItens(new ArrayList<LancamentoColeta>());
 
         numeroNotaFiscal = 0L;
         unidade = "";
@@ -156,7 +160,9 @@ public class MainActivity extends AppCompatActivity {
         btnBuscarColeta.setEnabled(true);
 
         btnAlterarColeta.setEnabled(false);
+        btnAlterarColeta.setText(R.string.botao_alterar);
         btnExcluirColeta.setEnabled(false);
+        btnExcluirColeta.setText(R.string.botao_excluir);
 
         listLancamentoColeta.setEnabled(false);
 
@@ -170,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarColeta.setText(R.string.botao_alterar);
         btnExcluirColeta.setEnabled(true);
         btnExcluirColeta.setText(R.string.botao_excluir);
+
         listLancamentoColeta.setEnabled(true);
 
         btnIniciarColeta.setEnabled(false);
@@ -194,25 +201,17 @@ public class MainActivity extends AppCompatActivity {
         desabilitarCamposItem();
     }
 
-    private void mudarBotoesBuscaProdutoEan() {
-        btnLancar.setEnabled(true);
-        btnLimpar.setEnabled(true);
-
-        btnAlterarItem.setEnabled(false);
-        btnExcluirItem.setEnabled(false);
-
-        listLancamentoColeta.setEnabled(false);
-
-        habilitarCamposItem();
-    }
-
     private void mudarBotoesIniciarItem() {
         listLancamentoColeta.setEnabled(true);
 
-        btnAlterarItem.setText(R.string.botao_alterar);
+        btnLancar.setEnabled(true);
+        btnLimpar.setEnabled(true);
         btnLimpar.setText(R.string.botao_limpar);
 
-        desabilitarBotoesItem();
+        btnAlterarItem.setEnabled(false);
+        btnAlterarItem.setText(R.string.botao_alterar);
+        btnExcluirItem.setEnabled(false);
+
         habilitarCamposItem();
     }
 
@@ -233,25 +232,6 @@ public class MainActivity extends AppCompatActivity {
         desabilitarCamposItem();
 
         btnLancar.setEnabled(false);
-    }
-
-    private void desabilitarBotoesColeta() {
-        btnIniciarColeta.setEnabled(false);
-        btnBuscarColeta.setEnabled(false);
-        btnAlterarColeta.setEnabled(false);
-        btnExcluirColeta.setEnabled(false);
-    }
-
-    private void habilitarBotoesColeta() {
-        btnIniciarColeta.setEnabled(true);
-        btnBuscarColeta.setEnabled(true);
-        btnAlterarColeta.setEnabled(true);
-        btnExcluirColeta.setEnabled(true);
-    }
-
-    private void desabilitarCamposColeta() {
-        edtCnpjCfp.setEnabled(false);
-        edtNumeroNotaFiscal.setEnabled(false);
     }
 
     private void habilitarCamposColeta() {
@@ -313,8 +293,6 @@ public class MainActivity extends AppCompatActivity {
                 vencimento.get(Calendar.MONTH),
                 vencimento.get(Calendar.DAY_OF_MONTH)
         );
-
-        edtEan.requestFocus();
     }
 
     private void preencherCampos() throws ApiException, IOException {
@@ -367,15 +345,28 @@ public class MainActivity extends AppCompatActivity {
     private void preencherCamposItem() {
         edtEan.setText(produto.getEan());
         txvDescricao.setText(produto.getDescricao());
-        edtQntTotal.setText(
-                String.valueOf(qntTotal)
-        );
-        edtQntNaEmb.setText(
-                String.valueOf(qntNaEmb)
-        );
-        edtQntEmb.setText(
-                String.valueOf(qntEmb)
-        );
+
+        if(qntTotal > 0) {
+            edtQntTotal.setText(
+                    String.valueOf(qntTotal)
+            );
+        } else {
+            edtQntTotal.setText("");
+        }
+        if(qntNaEmb > 0) {
+            edtQntNaEmb.setText(
+                    String.valueOf(qntNaEmb)
+            );
+        } else {
+            edtQntNaEmb.setText("");
+        }
+        if(qntEmb > 0) {
+            edtQntEmb.setText(
+                    String.valueOf(qntEmb)
+            );
+        } else {
+            edtQntEmb.setText("");
+        }
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -421,9 +412,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setQntsValidadeItem() throws ApiException, IOException {
-        qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
-        qntEmb = Double.valueOf(edtQntEmb.getText().toString());
-        qntTotal = Double.valueOf(edtQntTotal.getText().toString());
+        if(edtQntNaEmb.getText().toString().isEmpty()) {
+            qntNaEmb = 0D;
+        } else {
+            qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
+        }
+        if(edtQntEmb.getText().toString().isEmpty()) {
+            qntEmb = 0D;
+        } else {
+            qntEmb = Double.valueOf(edtQntEmb.getText().toString());
+        }
+        if(edtQntTotal.getText().toString().isEmpty()) {
+            qntTotal = 0D;
+        } else {
+            qntTotal = Double.valueOf(edtQntTotal.getText().toString());
+        }
         vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
 
         buscarProdutoPorEan();
@@ -434,8 +437,6 @@ public class MainActivity extends AppCompatActivity {
 
         setProduto(new ProdUnidade());
         setProduto(produtoController.buscarPorEan(ean, unidade));
-
-        mudarBotoesBuscaProdutoEan();
     }
 
     private Set<Long> setPedidoIds(List<Pedido> pedidos) {
@@ -503,16 +504,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deletarColeta() {
-        try {
-            coletaController.deletarColeta(coleta);
-            setColeta(new Coleta());
-            iniciarNovaColeta();
-            Toast.makeText(this, "Deletado!!!", Toast.LENGTH_LONG).show();
-        } catch (ApiException apie) {
-            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Erro ao deletar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+        String repDeletar = getResources().getString(R.string.botao_excluir);
+
+        if(btnExcluirColeta.getText().toString().equals(repDeletar)) {
+            try {
+                coletaController.deletarColeta(coleta);
+                mudarBotoesIniciarColeta();
+                Toast.makeText(this, "Deletado!!!", Toast.LENGTH_LONG).show();
+            } catch (ApiException apie) {
+                Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                Toast.makeText(this, "Erro ao deletar coleta!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
+
+        iniciarNovaColeta();
     }
 
     private void atualizarColeta() {
@@ -538,9 +544,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             setColetaParaSalvar();
             coleta = coletaController.salvarColeta(coleta);
-
-            Log.i("Dentro salvarColeta", "Tá continuando mesmo depois de passar pelo salvar do REST");
-
             preencherCampos();
             mudarBotoesIniciarColeta();
             iniciarNovoItem();
@@ -587,25 +590,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void deletarItemColeta() {
         try {
+            int indexItem = coleta.getItens().indexOf(item);
             coletaController.deletarItemColeta(coleta, item);
+            coleta.getItens().remove(indexItem);
             mudarBotoesIniciarItem();
             iniciarNovoItem();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             Toast.makeText(this, "Erro ao deletar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void buscarColeta() {
-        try {
-            coleta = coletaController.buscarPorId(coleta.getId());
-            preencherCampos();
-            mudarBotoesIniciarColeta();
-        } catch (ApiException apie) {
-            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException | ParseException e) {
-            Toast.makeText(this, "Erro ao buscar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -634,9 +627,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_LEITURA:
-                iniciarNovoItem();
-
                 if (resultCode == LeitorActivity.SUCESSO) {
+                    iniciarNovoItem();
+
                     //Dados vindo da intent chamada em modo de espera de resultado.
                     if (data != null) {
                         edtEan.setText(data.getStringExtra(LeitorActivity.LEITURA));
@@ -760,20 +753,27 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    private boolean isFocusBuscaEan() {
+        return edtQntTotal.isFocused() ||
+                edtQntNaEmb.isFocused() ||
+                edtQntEmb.isFocused() ||
+                btnLancar.isFocused() ||
+                btnAlterarItem.isFocused();
+    }
+
     private View.OnFocusChangeListener edtEan_FocusChange() {
         return new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
-                if(view.equals(edtEan) && hasFocus) {
-                    Log.i("Dentro edtEanFocus", "Ele ganho o focu...");
-
+                if(hasFocus) {
                     abrirLeitura();
-                } else if(view.equals(edtEan)) {
+                } else if(isFocusBuscaEan()) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                         try {
                             buscarProdutoPorEan();
+                            mudarBotoesIniciarItem();
                         } catch (ApiException apie) {
                             Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
                         } catch (IOException e) {
@@ -873,9 +873,8 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.i("Dentro btnSalvarColeta", "Foi acionado, espero que com um clique");
-
                         salvarColeta();
+                        edtEan.requestFocus();
                     }
                 });
             }

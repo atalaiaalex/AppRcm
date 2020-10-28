@@ -47,6 +47,7 @@ public class LeitorActivity extends AppCompatActivity
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                onPause();
                 finish();
             }
         };
@@ -68,8 +69,9 @@ public class LeitorActivity extends AppCompatActivity
          * Registrando a entidade para que ela possa
          * trabalhar os resultados de scan. Seguindo a
          * documentação, o código entra no onResume().
-         * */
+        */
         z_xing_scanner.setResultHandler(this);
+
         startCamera();
     }
 
@@ -89,15 +91,12 @@ public class LeitorActivity extends AppCompatActivity
          * (front-facing) é a de ID 1.
          */
 
-        z_xing_scanner.setAutoFocus(true);
         z_xing_scanner.startCamera();
+        z_xing_scanner.setAutoFocus(true);
     }
 
     @Override
     public void handleResult(Result result) {
-        //Log.i("LOG", "Conteudo do código lido: "+result.getText());
-        //Log.i("LOG", "Formato do código lido: "+result.getBarcodeFormat().name());
-        z_xing_scanner.resumeCameraPreview( this );
         onPause();
 
         /* CÓDIGO DE PROCESSAMENTO DE SIMBOLOGIA LIDA */
@@ -110,7 +109,6 @@ public class LeitorActivity extends AppCompatActivity
     private boolean flashCamera(){
         if(getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
             z_xing_scanner.toggleFlash();
-            //z_xing_scanner.setDefaultFocusHighlightEnabled(true); //Só vale para API alta...
             return true;
         }
 
