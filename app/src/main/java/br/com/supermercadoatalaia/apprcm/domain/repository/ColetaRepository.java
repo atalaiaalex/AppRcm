@@ -357,6 +357,7 @@ public class ColetaRepository {
         jsonWriter.name("id").value(item.getId());
         jsonWriter.name("produtoId").value(item.getProdutoId());
         jsonWriter.name("produtoDescricao").value(item.getProdutoDescricao());
+        jsonWriter.name("produtoEan").value(item.getProdutoEan());
         jsonWriter.name("qntNaEmb").value(item.getQntNaEmb());
         jsonWriter.name("qntEmb").value(item.getQntEmb());
         jsonWriter.name("qntTotal").value(item.getQntTotal());
@@ -463,6 +464,7 @@ public class ColetaRepository {
         Long id = 0L;
         Long produtoId = 0L;
         String produtoDescricao = "";
+        String produtoEan = "";
         Double qntNaEmb = 0.0;
         Double qntEmb = 0.0;
         Double qntTotal = 0.0;
@@ -479,6 +481,8 @@ public class ColetaRepository {
                 produtoId = jsonReader.nextLong();
             } else if(key.equals("produtoDescricao") && jsonReader.peek() != JsonToken.NULL) {
                 produtoDescricao = jsonReader.nextString();
+            } else if(key.equals("produtoEan") && jsonReader.peek() != JsonToken.NULL) {
+                produtoEan = jsonReader.nextString();
             } else if(key.equals("qntNaEmb") && jsonReader.peek() != JsonToken.NULL) {
                 qntNaEmb = jsonReader.nextDouble();
             } else if(key.equals("qntEmb") && jsonReader.peek() != JsonToken.NULL) {
@@ -510,6 +514,7 @@ public class ColetaRepository {
                 qntTotal,
                 vencimento,
                 diasValidadeMinima,
+                produtoEan,
                 dataAlteracao
         );
     }

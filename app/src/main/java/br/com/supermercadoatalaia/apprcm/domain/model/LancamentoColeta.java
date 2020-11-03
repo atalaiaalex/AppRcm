@@ -10,6 +10,7 @@ public class LancamentoColeta implements Serializable {
     private Long id;
     private Long produtoId;
     private String produtoDescricao;
+    private String produtoEan;
     private Double qntNaEmb;
     private Double qntEmb;
     private Double qntTotal;
@@ -20,12 +21,13 @@ public class LancamentoColeta implements Serializable {
     public LancamentoColeta() {}
 
     public LancamentoColeta(Long id, Long produtoId, String produtoDescricao, Double qntNaEmb
-            ,Double qntEmb, Double qntTotal, Calendar vencimento, Integer diasValidadeMinima,
-                            Calendar dataAlteracao) {
+            ,Double qntEmb, Double qntTotal, Calendar vencimento, Integer diasValidadeMinima
+            ,String produtoEan, Calendar dataAlteracao) {
         super();
         this.id = id;
         this.produtoId = produtoId;
         this.produtoDescricao = produtoDescricao;
+        this.produtoEan = produtoEan;
         this.qntNaEmb = qntNaEmb;
         this.qntEmb = qntEmb;
         this.qntTotal = qntTotal;
@@ -129,5 +131,13 @@ public class LancamentoColeta implements Serializable {
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    public String getProdutoEan() {
+        return produtoEan;
+    }
+
+    public void setProdutoEan(String produtoEan) {
+        this.produtoEan = produtoEan;
     }
 }

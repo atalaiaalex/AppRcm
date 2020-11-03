@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void preencherCamposItem() {
+        //Testar depois pegar os dados direto de item
         edtEan.setText(produto.getEan());
         txvDescricao.setText(produto.getDescricao());
 
@@ -388,6 +389,7 @@ public class MainActivity extends AppCompatActivity {
                     qntTotal,
                     vencimento,
                     produto.getDiasValidadeMinima(),
+                    produto.getEan(),
                     null
                 )
         );
@@ -406,6 +408,7 @@ public class MainActivity extends AppCompatActivity {
                         qntTotal,
                         vencimento,
                         produto.getDiasValidadeMinima(),
+                        produto.getEan(),
                         item.getDataAlteracao()
                 )
         );
