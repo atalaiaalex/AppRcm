@@ -3,6 +3,7 @@ package br.com.supermercadoatalaia.apprcm;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -324,14 +325,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void preencherCamposItensDoList() {
-        try {
-            setProduto(new ProdUnidade());
-            setProduto(produtoController.buscarPorId(item.getProdutoId(), pedidos.get(0).getUnidade()));
-        } catch (ApiException apie) {
-            Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Erro ao buscar produto!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        ProdUnidade prod = new ProdUnidade();
+        prod.setId(item.getProdutoId());
+        prod.setEan(item.getProdutoEan());
+        prod.setDescricao(item.getProdutoDescricao());
+        prod.setDiasValidadeMinima(item.getDiasValidadeMinima());
+
+        setProduto(prod);
 
         qntTotal = item.getQntTotal();
         qntNaEmb = item.getQntNaEmb();
@@ -343,7 +343,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void preencherCamposItem() {
-        //Testar depois pegar os dados direto de item
         edtEan.setText(produto.getEan());
         txvDescricao.setText(produto.getDescricao());
 
@@ -437,9 +436,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void buscarProdutoPorEan() throws ApiException, IOException {
         String ean = edtEan.getText().toString();
+        edtEan.setText(ean13(ean));
 
-        setProduto(new ProdUnidade());
-        setProduto(produtoController.buscarPorEan(ean, unidade));
+        if(!produto.getEan().equals(edtEan.getText().toString())) {
+            setProduto(new ProdUnidade());
+            setProduto(produtoController.buscarPorEan(ean, unidade));
+        }
+    }
+
+    private String ean13(String ean) {
+
+        while(ean.length() < 13) {
+            ean = "0" + ean;
+        }
+
+        return ean;
     }
 
     private Set<Long> setPedidoIds(List<Pedido> pedidos) {
@@ -550,6 +561,7 @@ public class MainActivity extends AppCompatActivity {
             preencherCampos();
             mudarBotoesIniciarColeta();
             iniciarNovoItem();
+            edtEan.requestFocus();
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
@@ -774,19 +786,18 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                        try {
-                            buscarProdutoPorEan();
-                            mudarBotoesIniciarItem();
-                        } catch (ApiException apie) {
-                            Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
-                        } catch (IOException e) {
-                            Toast.makeText(
-                                    getApplicationContext(),
-                                    "Erro ao buscar produto!!!\n"+e.getMessage(),
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
-                        preencherCamposItem();
+                            try {
+                                buscarProdutoPorEan();
+                                preencherCamposItem();
+                            } catch (ApiException apie) {
+                                Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
+                            } catch (IOException e) {
+                                Toast.makeText(
+                                        getApplicationContext(),
+                                        "Erro ao buscar produto!!!\n"+e.getMessage(),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
                         }
                     });
                 }
@@ -877,7 +888,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         salvarColeta();
-                        edtEan.requestFocus();
                     }
                 });
             }
