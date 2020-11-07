@@ -13,6 +13,7 @@
     <string name="botao_configurar">Configurar</string>
     <string name="botao_iniciar">Iniciar</string>
     <string name="botao_nova_coleta">Nova Coleta</string>
+    <string name="botao_estou_ciente">Estou Ciente</string>
 
     <string name="coluna_item_id">Código</string>
     <string name="coluna_item_descricao">Descrição</string>

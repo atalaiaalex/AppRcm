@@ -18,6 +18,7 @@ public class ApiConsumer {
     public static String REST_COLETAS;
     public static String FORNECEDOR;
     public static String NUMERO_NOTA_FISCAL;
+    public static String OCORRENCIAS_PENDENTE;
     public static String LANCAR;
     public static String REST_FORNECEDORES;
     public static String CNPJ;
@@ -45,6 +46,7 @@ public class ApiConsumer {
         SERVER = configApp.lerTxt();
         REST_COLETAS = SERVER + "/coletas";
         FORNECEDOR = "/fornecedor/";
+        OCORRENCIAS_PENDENTE = "/ocorrencias_pendente";
         NUMERO_NOTA_FISCAL = "/numero_nota_fiscal/";
         LANCAR = "/lancar/";
         REST_FORNECEDORES = SERVER + "/fornecedores";

@@ -3,9 +3,7 @@ package br.com.supermercadoatalaia.apprcm;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -37,6 +35,7 @@ import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
+import br.com.supermercadoatalaia.apprcm.domain.model.OcorrenciaFornecedor;
 import br.com.supermercadoatalaia.apprcm.domain.model.Pedido;
 import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
 
@@ -463,7 +462,7 @@ public class MainActivity extends AppCompatActivity {
         return ids;
     }
 
-    private void setColetaParaSalvar() throws ApiException, IOException, NumberFormatException {
+    private void setColetaParaSalvar() throws ApiException, IOException, NumberFormatException, ParseException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -480,7 +479,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setColetaParaAlterar() throws ApiException, IOException, NumberFormatException {
+    private void setColetaParaAlterar() throws ApiException, IOException, NumberFormatException, ParseException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -498,7 +497,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFornecedorPedidoUnidade()
-            throws ApiException, IOException, NumberFormatException {
+            throws ApiException, IOException, NumberFormatException, ParseException {
         String cnpjCfp = edtCnpjCfp.getText().toString();
         setNumeroNotaFiscal(
                 Long.valueOf(edtNumeroNotaFiscal.getText().toString())
@@ -506,6 +505,7 @@ public class MainActivity extends AppCompatActivity {
 
         setFornecedor(new Fornecedor());
         setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
+
         setPedidos(new ArrayList<Pedido>());
         setPedidos(
             pedidoController.buscarPorFornecedorNotaFiscal(
@@ -515,6 +515,20 @@ public class MainActivity extends AppCompatActivity {
         );
 
         setUnidade(pedidos.get(0).getUnidade());
+
+        try {
+            List<OcorrenciaFornecedor> ocorrencias =
+                    fornecedorController.listarOcorrencias(fornecedor.getId());
+
+            for(OcorrenciaFornecedor ocorrencia : ocorrencias) {
+                CaixaDialogoOcorrencia dialogo = new CaixaDialogoOcorrencia(
+                        "Ocorrência para o fornecedor " + fornecedor.getId(),
+                        ocorrencia
+                );
+
+                dialogo.show(getSupportFragmentManager(), "DialogoOcorrencia");
+            }
+        } catch(ApiException e) {}
     }
 
     private void deletarColeta() {
@@ -712,7 +726,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configurar() {
-        CaixaDialogo dialogo = new CaixaDialogo(
+        CaixaDialogoHost dialogo = new CaixaDialogoHost(
                 "Path Server Host",
                 configApp
         );

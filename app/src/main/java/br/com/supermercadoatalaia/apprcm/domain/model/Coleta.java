@@ -27,7 +27,7 @@ public class Coleta implements Serializable {
         this.id = id;
         this.fornecedorId = fornecedorId;
         this.numeroNotaFiscal = numeroNotaFiscal;
-        this.setPedidosId(pedidosId);
+        this.pedidosId = pedidosId;
         this.itens = itens;
         this.dataMovimento = dataMovimento;
         this.dataAlteracao = dataAlteracao;

@@ -17,14 +17,13 @@ import java.io.IOException;
 
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 
-public class CaixaDialogo extends DialogFragment {
+public class CaixaDialogoHost extends DialogFragment {
 
     private EditText edtDialogoHost;
-    private String hostApi;
     private String title;
     private ConfigApp configApp;
 
-    public CaixaDialogo(String title, ConfigApp configApp) {
+    public CaixaDialogoHost(String title, ConfigApp configApp) {
         this.title = title;
         this.configApp = configApp;
     }
@@ -34,7 +33,7 @@ public class CaixaDialogo extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.caixa_dialogo, null);
+        View view = inflater.inflate(R.layout.caixa_dialogo_host, null);
 
         edtDialogoHost = view.findViewById(R.id.edtDialogoHost);
 
@@ -62,7 +61,7 @@ public class CaixaDialogo extends DialogFragment {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        CaixaDialogo.this.getDialog().cancel();
+                        CaixaDialogoHost.this.getDialog().cancel();
                     }
                 });
 
