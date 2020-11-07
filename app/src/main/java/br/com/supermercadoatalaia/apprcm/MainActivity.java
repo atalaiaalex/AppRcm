@@ -99,11 +99,6 @@ public class MainActivity extends AppCompatActivity {
         initConfigApp();
 
         iniciarNovaColeta();
-
-        qntTotal = 0D;
-        qntEmb = 0D;
-        qntNaEmb = 0D;
-        vencimento = Calendar.getInstance();
     }
 
     private void setNumeroNotaFiscal(Long numeroNotaFiscal) {
@@ -137,10 +132,15 @@ public class MainActivity extends AppCompatActivity {
     private void iniciarNovaColeta() {
         mudarBotoesNovaColeta();
 
-        coleta = new Coleta();
-
+        setColeta(new Coleta());
         numeroNotaFiscal = 0L;
         unidade = "";
+
+        setProduto(new ProdUnidade());
+        qntTotal = 0D;
+        qntEmb = 0D;
+        qntNaEmb = 0D;
+        vencimento = Calendar.getInstance();
 
         edtCnpjCfp.setText("");
         edtNumeroNotaFiscal.setText("");

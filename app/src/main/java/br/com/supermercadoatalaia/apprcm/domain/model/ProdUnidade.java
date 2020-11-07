@@ -14,7 +14,10 @@ public class ProdUnidade implements Serializable {
     private Integer diasValidadeMinima;
     private String unidade;
 
-    public ProdUnidade() {}
+    public ProdUnidade() {
+        this.ean = "";
+        this.descricao = "";
+    }
 
     public ProdUnidade(Long id, String ean, String descricao, Double qntNaEmb, String status,
                        Integer diasValidadeMinima, String unidade) {
