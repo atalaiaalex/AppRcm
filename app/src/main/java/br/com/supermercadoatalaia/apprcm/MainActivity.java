@@ -182,8 +182,7 @@ public class MainActivity extends AppCompatActivity {
         btnIniciarColeta.setEnabled(false);
         btnBuscarColeta.setEnabled(false);
 
-        habilitarCamposItem();
-        desabilitarBotoesItem();
+        mudarBotoesIniciarItem();
     }
 
     private void mudarBotoesAlterarColeta() {
@@ -537,7 +536,7 @@ public class MainActivity extends AppCompatActivity {
         if(btnExcluirColeta.getText().toString().equals(repDeletar)) {
             try {
                 coletaController.deletarColeta(coleta);
-                mudarBotoesIniciarColeta();
+                mudarBotoesNovaColeta();
                 Toast.makeText(this, "Deletado!!!", Toast.LENGTH_LONG).show();
             } catch (ApiException apie) {
                 Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
