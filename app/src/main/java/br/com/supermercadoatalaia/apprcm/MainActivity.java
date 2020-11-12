@@ -496,11 +496,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFornecedorPedidoUnidade()
-            throws ApiException, IOException, NumberFormatException, ParseException {
+            throws ApiException, IOException, ParseException {
         String cnpjCfp = edtCnpjCfp.getText().toString();
-        setNumeroNotaFiscal(
-                Long.valueOf(edtNumeroNotaFiscal.getText().toString())
-        );
+
+        try {
+            setNumeroNotaFiscal(
+                    Long.valueOf(edtNumeroNotaFiscal.getText().toString())
+            );
+        } catch(NumberFormatException e) {
+            setNumeroNotaFiscal(0L);
+            edtNumeroNotaFiscal.setText("0");
+        }
 
         setFornecedor(new Fornecedor());
         setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
