@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         edtNumeroNotaFiscal.setText(
                 String.valueOf(pedidos.get(0).getNotaFiscalBaixada())
         );
-        txvRazaoSocial.setText(fornecedor.getRazaoSocial());
+        txvRazaoSocial.setText(fornecedor.getRazaoSocial() + " - Unid." + pedidos.get(0).getUnidade());
         txvDataMvto.setText(String.format(
                 "%1$td/%1$tm/%1$ty %1$tH:%1$tM",
                 coleta.getDataMovimento()
@@ -469,6 +469,7 @@ public class MainActivity extends AppCompatActivity {
                         null,
                         fornecedor.getId(),
                         numeroNotaFiscal,
+                        pedidos.get(0).getSerie(),
                         setPedidoIds(pedidos),
                         new ArrayList<LancamentoColeta>(),
                         null,
@@ -486,6 +487,7 @@ public class MainActivity extends AppCompatActivity {
                         coleta.getId(),
                         fornecedor.getId(),
                         numeroNotaFiscal,
+                        pedidos.get(0).getSerie(),
                         setPedidoIds(pedidos),
                         coleta.getItens(),
                         coleta.getDataMovimento(),
@@ -509,7 +511,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setFornecedor(new Fornecedor());
-        setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
+
+        if(cnpjCfp.length() >= 14) {
+            setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
+        } else {
+            setFornecedor(fornecedorController.buscarPorId(Long.valueOf(cnpjCfp)));
+        }
 
         setPedidos(new ArrayList<Pedido>());
         setPedidos(

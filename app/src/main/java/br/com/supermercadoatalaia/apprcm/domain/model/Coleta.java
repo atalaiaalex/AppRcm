@@ -13,6 +13,7 @@ public class Coleta implements Serializable {
     private Long id;
     private Long fornecedorId;
     private Long numeroNotaFiscal;
+    private String serie;
     private Set<Long> pedidosId;
     private String unidade;
     private List<LancamentoColeta> itens = new ArrayList<>();
@@ -21,12 +22,13 @@ public class Coleta implements Serializable {
 
     public Coleta() {}
 
-    public Coleta(Long id, Long fornecedorId, Long numeroNotaFiscal, Set<Long> pedidosId, List<LancamentoColeta> itens,
-                  Calendar dataMovimento, Calendar dataAlteracao, String unidade) {
+    public Coleta(Long id, Long fornecedorId, Long numeroNotaFiscal, String serie, Set<Long> pedidosId,
+                  List<LancamentoColeta> itens, Calendar dataMovimento, Calendar dataAlteracao, String unidade) {
         super();
         this.id = id;
         this.fornecedorId = fornecedorId;
         this.numeroNotaFiscal = numeroNotaFiscal;
+        this.serie = serie;
         this.pedidosId = pedidosId;
         this.itens = itens;
         this.dataMovimento = dataMovimento;
@@ -56,6 +58,14 @@ public class Coleta implements Serializable {
 
     public void setNumeroNotaFiscal(Long numeroNotaFiscal) {
         this.numeroNotaFiscal = numeroNotaFiscal;
+    }
+
+    public String getSerie() {
+        return serie;
+    }
+
+    public void setSerie(String serie) {
+        this.serie = serie;
     }
 
     public Set<Long> getPedidosId() {

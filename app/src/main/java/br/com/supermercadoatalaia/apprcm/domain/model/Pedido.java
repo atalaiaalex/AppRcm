@@ -11,19 +11,21 @@ public class Pedido implements Serializable {
     private String status;
     private Long fornecedorId;
     private Long notaFiscalBaixada;
+    private String serie;
     private String transacaoEntrada;
     private String unidade;
 
     public Pedido() {}
 
     public Pedido(Long id, String transacao, String status, Long fornecedorId, Long notaFiscalBaixada,
-                  String transacaoEntrada, String unidade) {
+                  String serie, String transacaoEntrada, String unidade) {
         super();
         this.id = id;
         this.transacao = transacao;
         this.status = status;
         this.fornecedorId = fornecedorId;
         this.notaFiscalBaixada = notaFiscalBaixada;
+        this.serie = serie;
         this.transacaoEntrada = transacaoEntrada;
         this.unidade = unidade;
     }
@@ -66,6 +68,14 @@ public class Pedido implements Serializable {
 
     public void setNotaFiscalBaixada(Long notaFiscalBaixada) {
         this.notaFiscalBaixada = notaFiscalBaixada;
+    }
+
+    public String getSerie() {
+        return serie;
+    }
+
+    public void setSerie(String serie) {
+        this.serie = serie;
     }
 
     public String getTransacaoEntrada() {

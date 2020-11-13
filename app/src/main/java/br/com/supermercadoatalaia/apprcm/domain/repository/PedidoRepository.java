@@ -131,6 +131,7 @@ public class PedidoRepository {
         String status = "";
         Long fornecedorId = 0L;
         Long notaFiscalBaixada = 0L;
+        String serie = "";
         String transacaoEntrada = "";
         String unidade = "";
 
@@ -148,6 +149,8 @@ public class PedidoRepository {
                 fornecedorId = jsonReader.nextLong();
             } else if (key.equals("notaFiscalBaixada") && jsonReader.peek() != JsonToken.NULL) {
                 notaFiscalBaixada = jsonReader.nextLong();
+            } else if(key.equals("serie") && jsonReader.peek() != JsonToken.NULL) {
+                serie = jsonReader.nextString();
             } else if (key.equals("transacaoEntrada") && jsonReader.peek() != JsonToken.NULL) {
                 transacaoEntrada = jsonReader.nextString();
             } else if (key.equals("unidade") && jsonReader.peek() != JsonToken.NULL) {
@@ -168,6 +171,7 @@ public class PedidoRepository {
             status,
             fornecedorId,
             notaFiscalBaixada,
+            serie,
             transacaoEntrada,
             unidade
         );

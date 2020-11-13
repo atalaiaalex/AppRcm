@@ -306,6 +306,7 @@ public class ColetaRepository {
         jsonWriter.name("id").value(coleta.getId());
         jsonWriter.name("fornecedorId").value(coleta.getFornecedorId());
         jsonWriter.name("numeroNotaFiscal").value(coleta.getNumeroNotaFiscal());
+        jsonWriter.name("serie").value(coleta.getSerie());
         jsonWriter.name("pedidosId");
         setListPedidosId(jsonWriter, coleta.getPedidosId());
         jsonWriter.name("unidade").value(coleta.getUnidade());
@@ -398,6 +399,7 @@ public class ColetaRepository {
         Long id = 0L;
         Long fornecedorId = 0L;
         Long numeroNotaFiscal = 0L;
+        String serie = "";
         Set<Long> pedidosId = new HashSet<>();
         String unidade = "";
         List<LancamentoColeta> itens = new ArrayList<>();
@@ -413,6 +415,8 @@ public class ColetaRepository {
                 fornecedorId = jsonReader.nextLong();
             } else if(key.equals("numeroNotaFiscal") && jsonReader.peek() != JsonToken.NULL) {
                 numeroNotaFiscal = jsonReader.nextLong();
+            } else if(key.equals("serie") && jsonReader.peek() != JsonToken.NULL) {
+                serie = jsonReader.nextString();
             } else if(key.equals("pedidosId") && jsonReader.peek() != JsonToken.NULL) {
                 jsonReader.beginArray();
                 while (jsonReader.hasNext()) {
@@ -451,6 +455,7 @@ public class ColetaRepository {
                 id,
                 fornecedorId,
                 numeroNotaFiscal,
+                serie,
                 pedidosId,
                 itens,
                 dataMovimento,
