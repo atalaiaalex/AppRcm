@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
-import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
@@ -18,8 +17,8 @@ import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
 public class ProdUnidadeRepository {
     private final ApiConsumer apiConsumer;
 
-    public ProdUnidadeRepository(ConfigApp configApp) throws IOException {
-        apiConsumer = new ApiConsumer(configApp);
+    public ProdUnidadeRepository() {
+        apiConsumer = new ApiConsumer();
         apiConsumer.carregarConfiguracao();
     }
 

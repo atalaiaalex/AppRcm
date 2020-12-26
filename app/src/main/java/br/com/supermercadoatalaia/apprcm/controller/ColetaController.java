@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
-import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
@@ -15,8 +14,8 @@ public class ColetaController {
 
     private final ColetaRepository coletaRepository;
 
-    public ColetaController(ConfigApp configApp) throws IOException {
-        coletaRepository = new ColetaRepository(configApp);
+    public ColetaController() {
+        coletaRepository = new ColetaRepository();
     }
 
     public Coleta buscarPorId(Long id) throws ApiException, IOException, ParseException {

@@ -30,7 +30,6 @@ import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
 import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
 import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
 import br.com.supermercadoatalaia.apprcm.controller.ProdutoController;
-import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
@@ -45,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private FornecedorController fornecedorController;
     private PedidoController pedidoController;
     private ProdutoController produtoController;
-    private ConfigApp configApp;
 
     public static final int REQUEST_LEITURA = 21;
     public static final int REQUEST_CONSULTA = 22;
@@ -94,9 +92,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        coletaController = new ColetaController();
+        fornecedorController = new FornecedorController();
+        pedidoController = new PedidoController();
+        produtoController = new ProdutoController();
+
         initComponents();
         initPermissoes();
-        initConfigApp();
 
         iniciarNovaColeta();
     }
@@ -735,30 +737,6 @@ public class MainActivity extends AppCompatActivity {
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
 
         listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
-    }
-
-    private void configurar() {
-        CaixaDialogoHost dialogo = new CaixaDialogoHost(
-                "Path Server Host",
-                configApp
-        );
-
-        dialogo.show(getSupportFragmentManager(), "DialogoHostApi");
-    }
-
-    private void initConfigApp() {
-        configApp = new ConfigApp(
-                getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath()
-        );
-
-        try {
-            coletaController = new ColetaController(configApp);
-            fornecedorController = new FornecedorController(configApp);
-            pedidoController = new PedidoController(configApp);
-            produtoController = new ProdutoController(configApp);
-        } catch (IOException e) {
-            configurar();
-        }
     }
 
     private void initPermissoes () {

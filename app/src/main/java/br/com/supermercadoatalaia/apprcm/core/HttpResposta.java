@@ -5,7 +5,11 @@ public enum HttpResposta {
     INCLUIDO(201, "Registro incluído"),
     SEM_CONTEUDO(204, "Sem conteúdo"),
     ERRO(400, "Solicitação incorreta"),
+    NAO_AUTORIZADO(401, "Não autorização"),
+    SEM_AUTORIZACAO(403, "Sem autorização"),
     NAO_ENCONTRADO(404, "Não encontrado"),
+    METODO_NAO_PERMITIDO(405, "Método não permitido"),
+    NAO_ACEITAVEL(406, "Requisição não aceita"),
     ERRO_SERVIDOR(500, "Erro no servidor"),
     ERRO_SEM_TRADUCAO(-1, "Erro"),
     RESPOSTA_SEM_TRADUCAO(-2, "Resposta");
@@ -34,11 +38,7 @@ public enum HttpResposta {
 307 Temporary Redirect
 308 Permanent Redirect
 
-401 Unauthorized
 402 Payment Required
-403 Forbidden
-405 Method Not Allowed
-406 Not Acceptable
 407 Proxy Authentication Required
 408 Request Timeout
 409 Conflict

@@ -3,7 +3,6 @@ package br.com.supermercadoatalaia.apprcm.domain.repository;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.JsonWriter;
-import android.util.Log;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -12,13 +11,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
-import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
@@ -31,8 +28,8 @@ public class ColetaRepository {
 
     private final ApiConsumer apiConsumer;
 
-    public ColetaRepository(ConfigApp configApp) throws IOException {
-        apiConsumer = new ApiConsumer(configApp);
+    public ColetaRepository() {
+        apiConsumer = new ApiConsumer();
         apiConsumer.carregarConfiguracao();
     }
 

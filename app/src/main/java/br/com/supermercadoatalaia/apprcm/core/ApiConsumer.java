@@ -3,8 +3,8 @@ package br.com.supermercadoatalaia.apprcm.core;
 import android.os.StrictMode;
 import android.util.JsonReader;
 import android.util.JsonWriter;
-import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,52 +14,55 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ApiConsumer {
-    private static String SERVER;
+    public static String LOGIN;
+
+    public static String SERVER;
     public static String REST_COLETAS;
+    public static String REST_PRODUTOS;
+    public static String REST_FORNECEDORES;
+    public static String REST_PEDIDOS;
+    public static String REST_COTACAO_PRODUTO;
+
     public static String FORNECEDOR;
     public static String NUMERO_NOTA_FISCAL;
     public static String OCORRENCIAS_PENDENTE;
     public static String LANCAR;
-    public static String REST_FORNECEDORES;
     public static String CNPJ;
     public static String VINCULO;
-    public static String REST_PEDIDOS;
     public static String BAIXADOS_FORNECEDOR;
     public static String NOTA_FISCAL;
-    public static String REST_PRODUTOS;
     public static String LOJA;
     public static String EAN;
 
-    private final ConfigApp configApp;
+    public static String token = "";
 
     private HttpURLConnection httpURLConnection;
     private int HttpCodeResposta;
 
-    public ApiConsumer(ConfigApp configApp) {
+    public ApiConsumer() {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
-        this.configApp = configApp;
     }
 
-    public void carregarConfiguracao() throws IOException {
-        SERVER = configApp.lerTxt();
+    public void carregarConfiguracao() {
+        LOGIN = SERVER + "/";
+
         REST_COLETAS = SERVER + "/coletas";
+        REST_PEDIDOS = SERVER + "/pedidos";
+        REST_FORNECEDORES = SERVER + "/fornecedores";
+        REST_PRODUTOS = SERVER + "/produtos";
+        REST_COTACAO_PRODUTO = SERVER + "/produtos_cotacao";
+
         FORNECEDOR = "/fornecedor/";
         OCORRENCIAS_PENDENTE = "/ocorrencias_pendente";
         NUMERO_NOTA_FISCAL = "/numero_nota_fiscal/";
         LANCAR = "/lancar/";
-        REST_FORNECEDORES = SERVER + "/fornecedores";
         CNPJ = "/cnpj/";
         VINCULO = "/vinculo/";
-        REST_PEDIDOS = SERVER + "/pedidos";
         BAIXADOS_FORNECEDOR = "/baixados_fornecedor/";
         NOTA_FISCAL = "/nota_fiscal/";
-        REST_PRODUTOS = SERVER + "/produtos";
         LOJA = "/loja/";
         EAN = "/ean/";
-
-        //Log.i("Saida REST_COLETAS", REST_COLETAS);
     }
 
     public void iniciarConexao(String method, URL url) throws IOException {
@@ -76,6 +79,10 @@ public class ApiConsumer {
     }
 
     public InputStream processarComResposta() throws IOException {
+        if(!ApiConsumer.token.isEmpty()) {
+            addCabecalho("Authorization", "Basic " + token);
+        }
+
         InputStream inputStream;
 
         try {
@@ -87,6 +94,18 @@ public class ApiConsumer {
         }
 
         return inputStream;
+    }
+
+    private String htmlToString(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader( new InputStreamReader( inputStream ) );
+        StringBuffer html = new StringBuffer();
+        String linha = "";
+
+        while( ( linha = reader.readLine() ) != null ) {
+            html.append(linha);
+        }
+
+        return html.toString();
     }
 
     public HttpResposta getHttpResposta() {

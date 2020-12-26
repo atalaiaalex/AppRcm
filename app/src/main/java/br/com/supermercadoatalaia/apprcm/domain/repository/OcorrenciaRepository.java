@@ -6,12 +6,10 @@ import android.util.JsonToken;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
-import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.OcorrenciaFornecedor;
@@ -20,8 +18,8 @@ public class OcorrenciaRepository {
 
     private final ApiConsumer apiConsumer;
 
-    public OcorrenciaRepository(ConfigApp configApp) throws IOException {
-        apiConsumer = new ApiConsumer(configApp);
+    public OcorrenciaRepository() {
+        apiConsumer = new ApiConsumer();
         apiConsumer.carregarConfiguracao();
     }
 
