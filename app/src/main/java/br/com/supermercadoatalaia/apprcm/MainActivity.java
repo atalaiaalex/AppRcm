@@ -139,20 +139,13 @@ public class MainActivity extends AppCompatActivity {
         unidade = "";
 
         setProduto(new ProdUnidade());
-        qntTotal = 0D;
-        qntEmb = 0D;
-        qntNaEmb = 0D;
-        vencimento = Calendar.getInstance();
+        iniciarNovoItem();
 
         edtCnpjCfp.setText("");
         edtNumeroNotaFiscal.setText("");
         txvDataMvto.setText("");
         txvPedidoId.setText("");
         txvRazaoSocial.setText("");
-
-        listLancamentoColeta.setAdapter(
-                new LancamentoColetaAdapter(coleta.getItens(), this)
-        );
 
         edtCnpjCfp.requestFocus();
     }

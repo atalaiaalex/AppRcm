@@ -3,6 +3,7 @@ package br.com.supermercadoatalaia.apprcm.domain.repository;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -287,6 +288,10 @@ public class ColetaRepository {
     }
 
     private URL urlColetaLancarId(Long id, Long itemId) throws MalformedURLException {
+        Log.i("EndPoint-LançarItem", ApiConsumer.REST_COLETAS +
+                "/" + id +
+                ApiConsumer.LANCAR +
+                itemId);
         return new URL(
                 ApiConsumer.REST_COLETAS +
                         "/" + id +

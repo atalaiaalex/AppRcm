@@ -48,13 +48,12 @@ public class LoginActivity extends AppCompatActivity {
         return v -> {
             try {
                 ApiConsumer apiConsumer = new ApiConsumer();
-                apiConsumer.carregarConfiguracao();
-                apiConsumer.iniciarConexao("GET", new URL(ApiConsumer.LOGIN));
                 ApiConsumer.token =
-                    Base64.encodeToString((txtUser.getText().toString()+":"+txtPassword.getText().toString())
-                        .getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                        Base64.encodeToString((txtUser.getText().toString()+":"+txtPassword.getText().toString())
+                                .getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)
+                ;
+                apiConsumer.autenticar();
 
-                apiConsumer.processarComResposta();
                 HttpResposta httpResposta = apiConsumer.getHttpResposta();
 
                 apiConsumer.fecharConexao();

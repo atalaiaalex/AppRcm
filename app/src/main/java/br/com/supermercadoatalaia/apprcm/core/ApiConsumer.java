@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ApiConsumer {
@@ -70,6 +71,17 @@ public class ApiConsumer {
         httpURLConnection.setRequestMethod(method);
     }
 
+    public void autenticar() throws IOException {
+        carregarConfiguracao();
+        iniciarConexao("GET", new URL(LOGIN));
+
+        if(!ApiConsumer.token.isEmpty()) {
+            addCabecalho("Authorization", "Basic " + token);
+        }
+
+        processarComResposta();
+    }
+
     public void addCabecalho(String chave, String valor) {
         httpURLConnection.setRequestProperty(chave, valor);
     }
@@ -79,10 +91,6 @@ public class ApiConsumer {
     }
 
     public InputStream processarComResposta() throws IOException {
-        if(!ApiConsumer.token.isEmpty()) {
-            addCabecalho("Authorization", "Basic " + token);
-        }
-
         InputStream inputStream;
 
         try {
