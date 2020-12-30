@@ -1,5 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
+import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonToken;
 
@@ -16,14 +17,15 @@ import br.com.supermercadoatalaia.apprcm.domain.model.Pedido;
 
 public class PedidoRepository {
     private final ApiConsumer apiConsumer;
+    private final Context context;
 
-    public PedidoRepository() {
+    public PedidoRepository(Context context) {
         apiConsumer = new ApiConsumer();
-        apiConsumer.carregarConfiguracao();
+        this.context = context;
     }
 
     public Pedido buscar(Long id) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlPedidoId(id));
+        apiConsumer.iniciarConexao("GET", urlPedidoId(id), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         Pedido pedido;
@@ -42,7 +44,7 @@ public class PedidoRepository {
     }
 
     public List<Pedido> listar(Long fornecedorId) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlPedidoBaixadosFornecedor(fornecedorId));
+        apiConsumer.iniciarConexao("GET", urlPedidoBaixadosFornecedor(fornecedorId), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         List<Pedido> pedidos;
@@ -66,7 +68,8 @@ public class PedidoRepository {
                 urlPedidoBaixadosFornecedorNotaFiscal(
                         fornecedorId,
                         notaFiscalBaixada
-                )
+                ),
+                context
         );
         apiConsumer.addCabecalho("Accept", "application/json");
 

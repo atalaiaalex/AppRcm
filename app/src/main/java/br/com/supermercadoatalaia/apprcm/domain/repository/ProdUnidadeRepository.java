@@ -1,5 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
+import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonToken;
 
@@ -16,14 +17,15 @@ import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
 
 public class ProdUnidadeRepository {
     private final ApiConsumer apiConsumer;
+    private final Context context;
 
-    public ProdUnidadeRepository() {
+    public ProdUnidadeRepository(Context context) {
         apiConsumer = new ApiConsumer();
-        apiConsumer.carregarConfiguracao();
+        this.context = context;
     }
 
     public ProdUnidade buscar(Long id, String unidade) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlProdutoIdUnidade(id, unidade));
+        apiConsumer.iniciarConexao("GET", urlProdutoIdUnidade(id, unidade), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         ProdUnidade prodUnidade;
@@ -42,7 +44,7 @@ public class ProdUnidadeRepository {
     }
 
     public ProdUnidade buscar(String ean, String unidade) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlProdutoEanUnidade(ean, unidade));
+        apiConsumer.iniciarConexao("GET", urlProdutoEanUnidade(ean, unidade), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         ProdUnidade prodUnidade;

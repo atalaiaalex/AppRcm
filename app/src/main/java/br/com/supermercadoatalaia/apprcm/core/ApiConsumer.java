@@ -1,8 +1,11 @@
 package br.com.supermercadoatalaia.apprcm.core;
 
+import android.content.Context;
 import android.os.StrictMode;
+import android.util.Base64;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,9 +16,18 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import br.com.supermercadoatalaia.apprcm.LoginActivity;
+import br.com.supermercadoatalaia.apprcm.domain.model.Usuario;
 
 public class ApiConsumer {
     public static String LOGIN;
+    public static String USUARIO;
+    public static String LOGOUT;
 
     public static String SERVER;
     public static String REST_COLETAS;
@@ -35,18 +47,19 @@ public class ApiConsumer {
     public static String LOJA;
     public static String EAN;
 
-    public static String token = "";
-
     private HttpURLConnection httpURLConnection;
     private int HttpCodeResposta;
 
     public ApiConsumer() {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+        carregarConfiguracao();
     }
 
-    public void carregarConfiguracao() {
+    private void carregarConfiguracao() {
         LOGIN = SERVER + "/";
+        USUARIO = SERVER + "/login";
+        LOGOUT = SERVER + "/logout";
 
         REST_COLETAS = SERVER + "/coletas";
         REST_PEDIDOS = SERVER + "/pedidos";
@@ -66,20 +79,16 @@ public class ApiConsumer {
         EAN = "/ean/";
     }
 
-    public void iniciarConexao(String method, URL url) throws IOException {
+    public void iniciarConexao(String method, URL url, Context context) throws IOException {
         httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestMethod(method);
-    }
 
-    public void autenticar() throws IOException {
-        carregarConfiguracao();
-        iniciarConexao("GET", new URL(LOGIN));
+        Usuario usuario = SharedPrefManager.getInstance(context).getUsuario();
 
-        if(!ApiConsumer.token.isEmpty()) {
-            addCabecalho("Authorization", "Basic " + token);
-        }
-
-        processarComResposta();
+        addCabecalho("Authorization", "Basic " +
+                Base64.encodeToString((usuario.getLogin()+":"+usuario.getPassword())
+                        .getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)
+        );
     }
 
     public void addCabecalho(String chave, String valor) {

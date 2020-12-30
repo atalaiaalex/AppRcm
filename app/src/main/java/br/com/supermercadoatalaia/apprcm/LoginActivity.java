@@ -4,7 +4,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
+import android.util.JsonReader;
+import android.util.JsonToken;
+import android.util.JsonWriter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +25,9 @@ import java.nio.charset.StandardCharsets;
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
+import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
+import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
+import br.com.supermercadoatalaia.apprcm.domain.model.Usuario;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -41,32 +48,125 @@ public class LoginActivity extends AppCompatActivity {
         initPermissoes();
         initConfigApp();
 
-        //Log.i("Json da resposta", jsonReader.nextName());
+        if(SharedPrefManager.getInstance(this).isLoggedIn()) {
+            finish();
+            startActivity(new Intent(this, MainActivity.class));
+        }
     }
 
     private View.OnClickListener btnLogin_Click() {
         return v -> {
-            try {
-                ApiConsumer apiConsumer = new ApiConsumer();
-                ApiConsumer.token =
-                        Base64.encodeToString((txtUser.getText().toString()+":"+txtPassword.getText().toString())
-                                .getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)
-                ;
-                apiConsumer.autenticar();
+            ApiConsumer apiConsumer = new ApiConsumer();
 
+            final String username = txtUser.getText().toString();
+            final String password = txtPassword.getText().toString();
+
+            if (TextUtils.isEmpty(username)) {
+                txtUser.setError("Por favor insira seu login");
+                txtUser.requestFocus();
+                return;
+            }
+
+            if (TextUtils.isEmpty(password)) {
+                txtPassword.setError("Por favor insira sua senha");
+                txtPassword.requestFocus();
+                return;
+            }
+
+            try {
+                SharedPrefManager.getInstance(getApplicationContext())
+                        .userLogin(
+                                new Usuario(
+                                        0L,
+                                        "",
+                                        username,
+                                        password,
+                                        true)
+                );
+
+                apiConsumer.iniciarConexao(
+                        "POST",
+                        new URL(ApiConsumer.USUARIO),
+                        getApplicationContext()
+                );
+                apiConsumer.addCabecalho("Content-Type", "application/json");
+                apiConsumer.addCabecalho("Accept", "application/json");
+
+                setUsuario(
+                        apiConsumer.getJsonWriter(),
+                        new Usuario(0L, "", username, "", false)
+                );
+
+                JsonReader jsonReader = apiConsumer.getJsonReader();
                 HttpResposta httpResposta = apiConsumer.getHttpResposta();
 
-                apiConsumer.fecharConexao();
-
                 if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-                    startActivity(new Intent(this, MainActivity.class));
+                    SharedPrefManager.getInstance(getApplicationContext())
+                            .userLogin(instanciarUsuario(jsonReader));
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 } else {
-                    Toast.makeText(getApplicationContext(), "Falha no login", Toast.LENGTH_LONG).show();
+                    Toast.makeText(
+                            getApplicationContext(),
+                            new ApiException(httpResposta, jsonReader).getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
                 }
+
+                apiConsumer.fecharConexao();
             } catch (IOException e) {
+                e.printStackTrace();
                 Toast.makeText(getApplicationContext(), "Falha na conexão", Toast.LENGTH_LONG).show();
             }
         };
+    }
+
+    private void setUsuario(JsonWriter jsonWriter, Usuario usuario) throws IOException {
+        jsonWriter.setIndent("  ");
+        jsonWriter.beginObject();
+        jsonWriter.name("id").value(usuario.getId());
+        jsonWriter.name("nome").value(usuario.getNome());
+        jsonWriter.name("login").value(usuario.getLogin());
+        jsonWriter.name("senha").value(usuario.getPassword());
+        jsonWriter.name("ativo").value(usuario.isAtivo());
+        jsonWriter.endObject();
+        jsonWriter.close();
+    }
+
+    private Usuario instanciarUsuario(JsonReader jsonReader) throws IOException {
+        Long id = 0L;
+        String nome = "";
+        String login = "";
+        String password = "";
+        boolean ativo = false;
+
+        jsonReader.beginObject();
+        while (jsonReader.hasNext()) {
+            String key = jsonReader.nextName();
+            if (key.equals("id")) {
+                id = jsonReader.nextLong();
+            } else if(key.equals("nome") && jsonReader.peek() != JsonToken.NULL) {
+                nome = jsonReader.nextString();
+            } else if(key.equals("username") && jsonReader.peek() != JsonToken.NULL) {
+                login = jsonReader.nextString();
+            } else if(key.equals("password") && jsonReader.peek() != JsonToken.NULL) {
+                password = txtPassword.getText().toString();
+                jsonReader.skipValue();
+            } else if(key.equals("enabled") && jsonReader.peek() != JsonToken.NULL) {
+                ativo = jsonReader.nextBoolean();
+            } else {
+                jsonReader.skipValue();
+            }
+        }
+        jsonReader.endObject();
+        jsonReader.close();
+
+        return new Usuario(
+                id,
+                nome,
+                login,
+                password,
+                ativo
+        );
     }
 
     private void initComponent() {

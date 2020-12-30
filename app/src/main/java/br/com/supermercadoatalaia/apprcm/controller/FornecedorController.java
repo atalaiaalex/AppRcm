@@ -1,5 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.controller;
 
+import android.content.Context;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -14,9 +16,9 @@ public class FornecedorController {
     private final FornecedorRepository fornecedorRepository;
     private final OcorrenciaRepository ocorrenciaRepository;
 
-    public FornecedorController() {
-        fornecedorRepository = new FornecedorRepository();
-        ocorrenciaRepository = new OcorrenciaRepository();
+    public FornecedorController(Context context) {
+        fornecedorRepository = new FornecedorRepository(context);
+        ocorrenciaRepository = new OcorrenciaRepository(context);
     }
 
     public Fornecedor buscarPorId(Long id) throws ApiException, IOException {

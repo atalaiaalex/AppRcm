@@ -1,5 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.controller;
 
+import android.content.Context;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -10,8 +12,8 @@ import br.com.supermercadoatalaia.apprcm.domain.repository.PedidoRepository;
 public class PedidoController {
     private final PedidoRepository pedidoRepository;
 
-    public PedidoController() {
-        pedidoRepository = new PedidoRepository();
+    public PedidoController(Context context) {
+        pedidoRepository = new PedidoRepository(context);
     }
 
     public Pedido buscarPorId(Long id) throws ApiException, IOException {

@@ -1,5 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
+import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.JsonWriter;
@@ -28,14 +29,15 @@ public class ColetaRepository {
     private static final String FORMATO_DATA = "yyyy-MM-dd";
 
     private final ApiConsumer apiConsumer;
+    private final Context context;
 
-    public ColetaRepository() {
+    public ColetaRepository(Context context) {
         apiConsumer = new ApiConsumer();
-        apiConsumer.carregarConfiguracao();
+        this.context = context;
     }
 
     public Coleta buscar(Long id) throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("GET", urlColetaId(id));
+        apiConsumer.iniciarConexao("GET", urlColetaId(id), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         Coleta coleta;
@@ -55,7 +57,7 @@ public class ColetaRepository {
 
     public List<Coleta> listarPorFornecedor(Long fornecedorId)
             throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("GET", urlColetaFornecedorId(fornecedorId));
+        apiConsumer.iniciarConexao("GET", urlColetaFornecedorId(fornecedorId), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         List<Coleta> coletas;
@@ -75,7 +77,7 @@ public class ColetaRepository {
 
     public List<Coleta> listarPorNf(Long numeroNotaFiscal)
             throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("GET", urlColetaNumeroNotaFiscal(numeroNotaFiscal));
+        apiConsumer.iniciarConexao("GET", urlColetaNumeroNotaFiscal(numeroNotaFiscal), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         List<Coleta> coletas;
@@ -95,8 +97,10 @@ public class ColetaRepository {
 
     public Coleta buscar(Long fornecedorId, Long numeroNotaFiscal)
             throws ApiException, ParseException, IOException {
-        apiConsumer.iniciarConexao("GET",
-                urlColetaFornecedorIdNumeroNotaFiscal(fornecedorId, numeroNotaFiscal)
+        apiConsumer.iniciarConexao(
+                "GET",
+                urlColetaFornecedorIdNumeroNotaFiscal(fornecedorId, numeroNotaFiscal),
+                context
         );
         apiConsumer.addCabecalho("Accept", "application/json");
 
@@ -117,8 +121,10 @@ public class ColetaRepository {
     }
 
     public Coleta salvar(Coleta coleta) throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("POST",
-                new URL(ApiConsumer.REST_COLETAS)
+        apiConsumer.iniciarConexao(
+                "POST",
+                new URL(ApiConsumer.REST_COLETAS),
+                context
         );
         apiConsumer.addCabecalho("Content-Type", "application/json");
         apiConsumer.addCabecalho("Accept", "application/json");
@@ -140,9 +146,12 @@ public class ColetaRepository {
     }
 
     public Coleta atualizar(Coleta coleta) throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("PUT",
-                urlColetaId(coleta.getId())
+        apiConsumer.iniciarConexao(
+                "PUT",
+                urlColetaId(coleta.getId()),
+                context
         );
+
         apiConsumer.addCabecalho("Content-Type", "application/json");
         apiConsumer.addCabecalho("Accept", "application/json");
 
@@ -163,8 +172,10 @@ public class ColetaRepository {
     }
 
     public HttpResposta deletar(Coleta coleta) throws ApiException, IOException {
-        apiConsumer.iniciarConexao("DELETE",
-                urlColetaId(coleta.getId())
+        apiConsumer.iniciarConexao(
+                "DELETE",
+                urlColetaId(coleta.getId()),
+                context
         );
 
         JsonReader jsonReader = apiConsumer.getJsonReader();
@@ -181,8 +192,10 @@ public class ColetaRepository {
 
     public LancamentoColeta salvarItem(Coleta coleta, LancamentoColeta item)
             throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("POST",
-                urlColetaLancar(coleta.getId())
+        apiConsumer.iniciarConexao(
+                "POST",
+                urlColetaLancar(coleta.getId()),
+                context
         );
         apiConsumer.addCabecalho("Content-Type", "application/json");
         apiConsumer.addCabecalho("Accept", "application/json");
@@ -205,8 +218,10 @@ public class ColetaRepository {
 
     public LancamentoColeta atualizarItem(Coleta coleta, LancamentoColeta item)
             throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("PUT",
-                urlColetaLancarId(coleta.getId(), item.getId())
+        apiConsumer.iniciarConexao(
+                "PUT",
+                urlColetaLancarId(coleta.getId(), item.getId()),
+                context
         );
         apiConsumer.addCabecalho("Content-Type", "application/json");
         apiConsumer.addCabecalho("Accept", "application/json");
@@ -229,8 +244,10 @@ public class ColetaRepository {
 
     public HttpResposta deletarItem(Coleta coleta, LancamentoColeta item)
             throws ApiException, IOException {
-        apiConsumer.iniciarConexao("DELETE",
-                urlColetaLancarId(coleta.getId(), item.getId())
+        apiConsumer.iniciarConexao(
+                "DELETE",
+                urlColetaLancarId(coleta.getId(), item.getId()),
+                context
         );
 
         JsonReader jsonReader = apiConsumer.getJsonReader();
@@ -288,10 +305,6 @@ public class ColetaRepository {
     }
 
     private URL urlColetaLancarId(Long id, Long itemId) throws MalformedURLException {
-        Log.i("EndPoint-LançarItem", ApiConsumer.REST_COLETAS +
-                "/" + id +
-                ApiConsumer.LANCAR +
-                itemId);
         return new URL(
                 ApiConsumer.REST_COLETAS +
                         "/" + id +

@@ -1,5 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
+import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonToken;
 
@@ -16,14 +17,15 @@ import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
 
 public class FornecedorRepository {
     private final ApiConsumer apiConsumer;
+    private final Context context;
 
-    public FornecedorRepository() {
+    public FornecedorRepository(Context context) {
         apiConsumer = new ApiConsumer();
-        apiConsumer.carregarConfiguracao();
+        this.context = context;
     }
 
     public Fornecedor buscar(Long id) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlFornecedorId(id));
+        apiConsumer.iniciarConexao("GET", urlFornecedorId(id), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         Fornecedor fornecedor;
@@ -42,7 +44,7 @@ public class FornecedorRepository {
     }
 
     public Fornecedor buscar(String cnpjCpf) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlFornecedorCnpjCpf(cnpjCpf));
+        apiConsumer.iniciarConexao("GET", urlFornecedorCnpjCpf(cnpjCpf), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         Fornecedor fornecedor;
@@ -61,7 +63,7 @@ public class FornecedorRepository {
     }
 
     public List<Fornecedor> listar(Long vinculoCodigo) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlFornecedorVinculo(vinculoCodigo));
+        apiConsumer.iniciarConexao("GET", urlFornecedorVinculo(vinculoCodigo), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         List<Fornecedor> fornecedores;

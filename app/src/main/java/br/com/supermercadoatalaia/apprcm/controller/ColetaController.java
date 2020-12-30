@@ -1,5 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.controller;
 
+import android.content.Context;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -14,8 +16,8 @@ public class ColetaController {
 
     private final ColetaRepository coletaRepository;
 
-    public ColetaController() {
-        coletaRepository = new ColetaRepository();
+    public ColetaController(Context context) {
+        coletaRepository = new ColetaRepository(context);
     }
 
     public Coleta buscarPorId(Long id) throws ApiException, IOException, ParseException {

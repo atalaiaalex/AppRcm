@@ -12,6 +12,7 @@
     <string name="botao_cancelar">Cancelar</string>
     <string name="botao_ok">OK</string>
     <string name="botao_login">Entrar</string>
+    <string name="botao_logout">Desconectar</string>
     <string name="botao_configurar">Configurar</string>
     <string name="botao_iniciar">Iniciar</string>
     <string name="botao_nova_coleta">Nova Coleta</string>

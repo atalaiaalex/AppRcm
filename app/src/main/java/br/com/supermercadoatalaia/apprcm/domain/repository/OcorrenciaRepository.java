@@ -1,5 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
+import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonToken;
 
@@ -17,20 +18,22 @@ import br.com.supermercadoatalaia.apprcm.domain.model.OcorrenciaFornecedor;
 public class OcorrenciaRepository {
 
     private final ApiConsumer apiConsumer;
+    private final Context context;
 
-    public OcorrenciaRepository() {
+    public OcorrenciaRepository(Context context) {
         apiConsumer = new ApiConsumer();
-        apiConsumer.carregarConfiguracao();
+        this.context = context;
     }
 
     public List<OcorrenciaFornecedor> listarOcorrencias(Long fornecedorId) throws IOException {
-        apiConsumer.iniciarConexao("GET", urlFornecedorIdOcorrencias(fornecedorId));
+        apiConsumer.iniciarConexao("GET", urlFornecedorIdOcorrencias(fornecedorId), context);
         apiConsumer.addCabecalho("Accept", "application/json");
 
         List<OcorrenciaFornecedor> ocorrencias;
         JsonReader jsonReader = apiConsumer.getJsonReader();
         HttpResposta httpResposta = apiConsumer.getHttpResposta();
 
+        //talvez mudar esse if para verifica maior ou igual a 400 lançar exceção
         if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
             ocorrencias = instanciarListaOcorrencia(jsonReader);
         } else {

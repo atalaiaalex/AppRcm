@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,6 +31,8 @@ import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
 import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
 import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
 import br.com.supermercadoatalaia.apprcm.controller.ProdutoController;
+import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
+import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnLancar;
     private Button btnNovaColeta;
     private Button btnIniciarColeta;
+    private Button btnLogout;
 
     private DatePicker dpkValidade;
 
@@ -92,10 +96,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        coletaController = new ColetaController();
-        fornecedorController = new FornecedorController();
-        pedidoController = new PedidoController();
-        produtoController = new ProdutoController();
+        coletaController = new ColetaController(getApplicationContext());
+        fornecedorController = new FornecedorController(getApplicationContext());
+        pedidoController = new PedidoController(getApplicationContext());
+        produtoController = new ProdutoController(getApplicationContext());
 
         initComponents();
         initPermissoes();
@@ -437,6 +441,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void logout() {
+        ApiConsumer apiConsumer = new ApiConsumer();
+
+        try {
+            apiConsumer.iniciarConexao(
+                    "GET",
+                    new URL(ApiConsumer.LOGOUT),
+                    getApplicationContext()
+            );
+            apiConsumer.processarComResposta();
+            SharedPrefManager.getInstance(getApplicationContext()).logout();
+        } catch (IOException e) {
+
+        }
+    }
+
     private String ean13(String ean) {
 
         while(ean.length() < 13) {
@@ -525,7 +545,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             List<OcorrenciaFornecedor> ocorrencias =
-                    fornecedorController.listarOcorrencias(fornecedor.getId());
+                    fornecedorController.listarOcorrencias(fornecedor.getId())
+            ;
 
             for(OcorrenciaFornecedor ocorrencia : ocorrencias) {
                 CaixaDialogoOcorrencia dialogo = new CaixaDialogoOcorrencia(
@@ -535,7 +556,11 @@ public class MainActivity extends AppCompatActivity {
 
                 dialogo.show(getSupportFragmentManager(), "DialogoOcorrencia");
             }
-        } catch(ApiException e) {}
+        } catch(ApiException e) {
+            e.printStackTrace();// coloquei para ver que erro dá aqui nas ocorrencias
+        } catch(Exception ea) {
+            ea.printStackTrace();
+        }
     }
 
     private void deletarColeta() {
@@ -712,6 +737,7 @@ public class MainActivity extends AppCompatActivity {
         btnLancar = findViewById(R.id.btnLancar);
         btnNovaColeta = findViewById(R.id.btnNovaColeta);
         btnIniciarColeta = findViewById(R.id.btnIniciarColeta);
+        btnLogout = findViewById(R.id.btnLogout);
 
         dpkValidade = findViewById(R.id.dpkValidade);
 
@@ -726,6 +752,7 @@ public class MainActivity extends AppCompatActivity {
         btnLancar.setOnClickListener(btnSalvarItemColeta_Click());
         btnIniciarColeta.setOnClickListener(btnSalvarColeta_Click());
         btnNovaColeta.setOnClickListener(btnNovaColeta_Click());
+        btnLogout.setOnClickListener(btnLogout_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
 
@@ -807,6 +834,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 iniciarNovaColeta();
+            }
+        };
+    }
+
+    private View.OnClickListener btnLogout_Click() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                logout();
             }
         };
     }
