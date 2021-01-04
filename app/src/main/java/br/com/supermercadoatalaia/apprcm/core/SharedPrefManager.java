@@ -39,7 +39,7 @@ public class SharedPrefManager {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putLong(KEY_ID, usuario.getId());
-        editor.putString(KEY_NOME, usuario.getLogin());
+        editor.putString(KEY_NOME, usuario.getNome());
         editor.putString(KEY_LOGIN, usuario.getLogin());
         editor.putString(KEY_PASSWORD, usuario.getPassword());
         editor.putBoolean(KEY_ATIVO, usuario.isAtivo());

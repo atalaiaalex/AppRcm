@@ -43,7 +43,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        style="@style/Widget.AppCompat.Button.Borderless" >
 
         <Button
             android:id="@+id/btnIniciarColeta"
@@ -67,7 +68,7 @@
             android:id="@+id/btnExcluirColeta"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/botao_excluir"/>
+            android:text="@string/botao_excluir" />
     </LinearLayout>
 
     <LinearLayout
@@ -78,12 +79,14 @@
         <TextView
             android:id="@+id/txvRazaoSocial"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/txvUnidade"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
     </LinearLayout>
 
@@ -96,14 +99,21 @@
             android:id="@+id/txvDataMvto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/txvPedidoId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/txvUsuario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textColor="@android:color/holo_blue_light"/>
 
     <TableLayout
         android:layout_width="wrap_content"
@@ -149,9 +159,7 @@
         <ListView
             android:id="@+id/listLancamentoColeta"
             android:layout_width="match_parent"
-            android:layout_height="300dp">
-
-        </ListView>
+            android:layout_height="300dp" />
     </TableLayout>
 
     <LinearLayout
@@ -227,7 +235,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        style="@style/Widget.AppCompat.Button.Borderless" >
 
         <Button
             android:id="@+id/btnLancar"
@@ -255,19 +264,27 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="@string/botao_logout"/>
+        android:orientation="horizontal"
+        style="@style/Widget.AppCompat.Button.Borderless" >
 
-    <Button
-        android:id="@+id/btnNovaColeta"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="@string/botao_nova_coleta"/>
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:text="@string/botao_logout"/>
+
+        <Button
+            android:id="@+id/btnNovaColeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="@string/botao_nova_coleta"/>
+
+    </LinearLayout>
 
 </LinearLayout>
 </ScrollView>

@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView txvPedidoId;
     private TextView txvDescricao;
     private TextView txvUnidade;
+    private TextView txvUsuario;
 
     private Button btnBuscarColeta;
     private Button btnAlterarColeta;
@@ -303,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         edtNumeroNotaFiscal.setText(
                 String.valueOf(pedidos.get(0).getNotaFiscalBaixada())
         );
-        txvRazaoSocial.setText(fornecedor.getRazaoSocial() + " - Unid." + pedidos.get(0).getUnidade());
+        txvRazaoSocial.setText(fornecedor.getRazaoSocial());
         txvDataMvto.setText(String.format(
                 "%1$td/%1$tm/%1$ty %1$tH:%1$tM",
                 coleta.getDataMovimento()
@@ -312,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
         txvPedidoId.setText(
                 setPedidoIds(pedidos).toString()
         );
+        txvUnidade.setText("Unid." + pedidos.get(0).getUnidade());
 
         edtCnpjCfp.setEnabled(false);
         edtNumeroNotaFiscal.setEnabled(false);
@@ -727,6 +729,7 @@ public class MainActivity extends AppCompatActivity {
         txvPedidoId = findViewById(R.id.txvPedidoId);
         txvDescricao = findViewById(R.id.txvDescricao);
         txvUnidade = findViewById(R.id.txvUnidade);
+        txvUsuario = findViewById(R.id.txvUsuario);
 
         btnBuscarColeta = findViewById(R.id.btnBuscarColeta);
         btnAlterarColeta = findViewById(R.id.btnAlterarColeta);
@@ -757,6 +760,11 @@ public class MainActivity extends AppCompatActivity {
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
 
         listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
+
+        txvUsuario.setText(
+                "Usuário: " +
+                SharedPrefManager.getInstance(getApplicationContext()).getUsuario().getNome()
+        );
     }
 
     private void initPermissoes () {
