@@ -61,9 +61,9 @@ public class LancamentoColetaAdapter extends BaseAdapter {
 
             txvListItemId.setText(String.format("%d",item.getProdutoId()));
             txvListItemDescricao.setText(item.getProdutoDescricao());
-            txvListItemQntNaEmb.setText(String.format("%,.2f", item.getQntNaEmb()));
-            txvListItemQntEmb.setText(String.format("%,.2f", item.getQntEmb()));
-            txvListItemQntTotal.setText(String.format("%,.2f", item.getQntTotal()));
+            txvListItemQntNaEmb.setText(String.format("%1$,.2f", item.getQntNaEmb()));
+            txvListItemQntEmb.setText(String.format("%1$,.2f", item.getQntEmb()));
+            txvListItemQntTotal.setText(String.format("%1$,.2f", item.getQntTotal()));
             txvListItemVencimento.setText(String.format("%1$te/%1$tm/%1$ty", item.getVencimento()));
         }
 

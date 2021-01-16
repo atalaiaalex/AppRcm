@@ -48,9 +48,15 @@ public class LoginActivity extends AppCompatActivity {
         initPermissoes();
         initConfigApp();
 
-        if(SharedPrefManager.getInstance(this).isLoggedIn()) {
-            finish();
-            startActivity(new Intent(this, MainActivity.class));
+        try {
+            ApiConsumer.SERVER = configApp.lerTxt();
+
+            if(SharedPrefManager.getInstance(this).isLoggedIn()) {
+                finish();
+                startActivity(new Intent(this, MainActivity.class));
+            }
+        } catch (IOException e) {
+            configurar();
         }
     }
 
@@ -190,12 +196,6 @@ public class LoginActivity extends AppCompatActivity {
         configApp = new ConfigApp(
                 getExternalFilesDir(ConfigApp.PASTA_CONFIG).getAbsolutePath()
         );
-
-        try {
-            ApiConsumer.SERVER = configApp.lerTxt();
-        } catch (IOException e) {
-            configurar();
-        }
     }
 
     private void initPermissoes () {
