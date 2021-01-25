@@ -83,8 +83,18 @@ public class ApiConsumer {
         httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestMethod(method);
 
-        Usuario usuario = SharedPrefManager.getInstance(context).getUsuario();
+        autenticar(SharedPrefManager.getInstance(context).getUsuario());
+    }
 
+    public void login(String method, URL url, Context context, Usuario usuario)
+            throws IOException {
+        httpURLConnection = (HttpURLConnection) url.openConnection();
+        httpURLConnection.setRequestMethod(method);
+
+        autenticar(usuario);
+    }
+
+    private void autenticar(Usuario usuario) {
         addCabecalho("Authorization", "Basic " +
                 Base64.encodeToString((usuario.getLogin()+":"+usuario.getPassword())
                         .getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)

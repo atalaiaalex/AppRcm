@@ -1,18 +1,19 @@
 package br.com.supermercadoatalaia.apprcm.core;
 
 public enum HttpResposta {
-    SUCESSO(200, "Sucesso"),
-    INCLUIDO(201, "Registro incluído"),
-    SEM_CONTEUDO(204, "Sem conteúdo"),
-    ERRO(400, "Solicitação incorreta"),
-    NAO_AUTORIZADO(401, "Não autorização"),
-    SEM_AUTORIZACAO(403, "Sem autorização"),
-    NAO_ENCONTRADO(404, "Não encontrado"),
-    METODO_NAO_PERMITIDO(405, "Método não permitido"),
-    NAO_ACEITAVEL(406, "Requisição não aceita"),
-    ERRO_SERVIDOR(500, "Erro no servidor"),
-    ERRO_SEM_TRADUCAO(-1, "Erro"),
-    RESPOSTA_SEM_TRADUCAO(-2, "Resposta");
+    SUCESSO(200, "Sucesso."),
+    INCLUIDO(201, "Registro incluído."),
+    SEM_CONTEUDO(204, "Sem conteúdo."),
+    ERRO(400, "Solicitação incorreta!"),
+    NAO_AUTORIZADO(401, "Usuário ou senha inválido!"),
+    SEM_AUTORIZACAO(403, "Sem autorização!"),
+    NAO_ENCONTRADO(404, "Não encontrado."),
+    METODO_NAO_PERMITIDO(405, "Método não permitido!"),
+    NAO_ACEITAVEL(406, "Requisição não aceita."),
+    ERRO_SERVIDOR(500, "Erro no servidor!"),
+    ERRO_AUTENTICACAO(511, "Erro na autenticação!"),
+    ERRO_SEM_TRADUCAO(-1, "Erro!"),
+    RESPOSTA_SEM_TRADUCAO(-2, "Erro desconhecido");
 
     /*
     1×× Informational
@@ -72,7 +73,6 @@ public enum HttpResposta {
 507 Insufficient Storage
 508 Loop Detected
 510 Not Extended
-511 Network Authentication Required
 599 Network Connect Timeout Error
      */
 

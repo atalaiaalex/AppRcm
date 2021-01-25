@@ -80,27 +80,20 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             try {
-                SharedPrefManager.getInstance(getApplicationContext())
-                        .userLogin(
-                                new Usuario(
-                                        0L,
-                                        "",
-                                        username,
-                                        password,
-                                        true)
-                );
+                Usuario usuario = new Usuario(0L, "", username, password, false);
 
-                apiConsumer.iniciarConexao(
+                apiConsumer.login(
                         "POST",
                         new URL(ApiConsumer.USUARIO),
-                        getApplicationContext()
+                        getApplicationContext(),
+                        usuario
                 );
                 apiConsumer.addCabecalho("Content-Type", "application/json");
                 apiConsumer.addCabecalho("Accept", "application/json");
 
                 setUsuario(
                         apiConsumer.getJsonWriter(),
-                        new Usuario(0L, "", username, "", false)
+                        usuario
                 );
 
                 JsonReader jsonReader = apiConsumer.getJsonReader();
@@ -109,7 +102,17 @@ public class LoginActivity extends AppCompatActivity {
                 if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
                     SharedPrefManager.getInstance(getApplicationContext())
                             .userLogin(instanciarUsuario(jsonReader));
+
+                    SharedPrefManager.getInstance(getApplicationContext())
+                            .getUsuario().setPassword(password);
+
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                } else if(httpResposta.getCode() == 401) {
+                    Toast.makeText(
+                            getApplicationContext(),
+                            httpResposta.getMensagem(),
+                            Toast.LENGTH_LONG
+                    ).show();
                 } else {
                     Toast.makeText(
                             getApplicationContext(),
