@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         txvDataMvto.setText("");
         txvPedidoId.setText("");
         txvRazaoSocial.setText("");
+        txvUnidade.setText("");
 
         edtCnpjCfp.requestFocus();
     }

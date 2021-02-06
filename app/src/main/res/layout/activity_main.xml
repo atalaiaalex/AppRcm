@@ -190,16 +190,6 @@
         android:orientation="horizontal">
 
         <EditText
-            android:id="@+id/edtQntNaEmb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_qnt_na_emb"
-            android:inputType="numberDecimal"
-            android:tooltipText="@string/hint_qnt_na_emb"
-            android:nextFocusDown="@id/edtQntEmb"
-            android:layout_weight="1" />
-
-        <EditText
             android:id="@+id/edtQntEmb"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -207,6 +197,16 @@
             android:inputType="number"
             android:hint="@string/hint_qnt_emb"
             android:nextFocusDown="@id/edtQntTotal"
+            android:layout_weight="1" />
+
+        <EditText
+            android:id="@+id/edtQntNaEmb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_qnt_na_emb"
+            android:inputType="numberDecimal"
+            android:tooltipText="@string/hint_qnt_na_emb"
+            android:nextFocusDown="@id/edtQntEmb"
             android:layout_weight="1" />
 
         <EditText
