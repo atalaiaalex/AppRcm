@@ -417,17 +417,17 @@ public class MainActivity extends AppCompatActivity {
         if(edtQntNaEmb.getText().toString().isEmpty()) {
             qntNaEmb = 0D;
         } else {
-            qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString());
+            qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString().replace(",", "."));
         }
         if(edtQntEmb.getText().toString().isEmpty()) {
             qntEmb = 0D;
         } else {
-            qntEmb = Double.valueOf(edtQntEmb.getText().toString());
+            qntEmb = Double.valueOf(edtQntEmb.getText().toString().replace(",", "."));
         }
         if(edtQntTotal.getText().toString().isEmpty()) {
             qntTotal = 0D;
         } else {
-            qntTotal = Double.valueOf(edtQntTotal.getText().toString());
+            qntTotal = Double.valueOf(edtQntTotal.getText().toString().replace(",", "."));
         }
         vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
 
@@ -610,7 +610,7 @@ public class MainActivity extends AppCompatActivity {
             preencherCampos();
             mudarBotoesIniciarColeta();
             iniciarNovoItem();
-            edtEan.requestFocus();
+            //edtEan.requestFocus(); //atrapalha em alguns momentos
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException | ParseException e) {
