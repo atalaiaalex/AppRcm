@@ -348,21 +348,21 @@ public class MainActivity extends AppCompatActivity {
 
         if(qntTotal > 0) {
             edtQntTotal.setText(
-                    String.format("%1$,.2f", qntTotal)
+                    String.format("%1$.2f", qntTotal)
             );
         } else {
             edtQntTotal.setText("");
         }
         if(qntNaEmb > 0) {
             edtQntNaEmb.setText(
-                    String.format("%1$,.2f", qntNaEmb)
+                    String.format("%1$.2f", qntNaEmb)
             );
         } else {
             edtQntNaEmb.setText("");
         }
         if(qntEmb > 0) {
             edtQntEmb.setText(
-                    String.format("%1$,.2f", qntEmb)
+                    String.format("%1$.2f", qntEmb)
             );
         } else {
             edtQntEmb.setText("");

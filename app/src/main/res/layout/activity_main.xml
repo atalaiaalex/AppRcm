@@ -136,12 +136,12 @@
             <TextView
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
-                android:text="@string/coluna_item_qnt_na_emb" />
+                android:text="@string/coluna_item_qnt_emb" />
 
             <TextView
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
-                android:text="@string/coluna_item_qnt_emb" />
+                android:text="@string/coluna_item_qnt_na_emb" />
 
             <TextView
                 android:layout_width="50dp"
@@ -174,7 +174,7 @@
             android:tooltipText="@string/hint_ean"
             android:inputType="number"
             android:hint="@string/hint_ean"
-            android:nextFocusDown="@id/edtQntNaEmb"
+            android:nextFocusDown="@id/edtQntEmb"
             android:layout_weight="1"/>
 
         <TextView
@@ -196,7 +196,7 @@
             android:tooltipText="@string/hint_qnt_emb"
             android:inputType="number"
             android:hint="@string/hint_qnt_emb"
-            android:nextFocusDown="@id/edtQntTotal"
+            android:nextFocusDown="@id/edtQntNaEmb"
             android:layout_weight="1" />
 
         <EditText
@@ -206,7 +206,7 @@
             android:hint="@string/hint_qnt_na_emb"
             android:inputType="numberDecimal"
             android:tooltipText="@string/hint_qnt_na_emb"
-            android:nextFocusDown="@id/edtQntEmb"
+            android:nextFocusDown="@id/edtQntTotal"
             android:layout_weight="1" />
 
         <EditText
