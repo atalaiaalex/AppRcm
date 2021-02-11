@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText edtQntNaEmb;
     private EditText edtQntEmb;
     private EditText edtQntTotal;
+    private EditText edtValidade;
 
     private TextView txvRazaoSocial;
     private TextView txvDataMvto;
@@ -258,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb.setEnabled(false);
         edtQntNaEmb.setEnabled(false);
         edtQntTotal.setEnabled(false);
+        edtValidade.setEnabled(false);
         dpkValidade.setEnabled(false);
     }
 
@@ -266,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb.setEnabled(true);
         edtQntNaEmb.setEnabled(true);
         edtQntTotal.setEnabled(true);
+        edtValidade.setEnabled(true);
         dpkValidade.setEnabled(true);
     }
 
@@ -287,6 +291,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb.setText("");
         edtQntNaEmb.setText("");
         edtQntTotal.setText("");
+        edtValidade.setText(String.format("%1$te/%1$tm/%1$ty", vencimento));
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -368,6 +373,8 @@ public class MainActivity extends AppCompatActivity {
             edtQntEmb.setText("");
         }
 
+        edtValidade.setText(String.format("%1$te/%1$tm/%1$ty", vencimento));
+
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
                 vencimento.get(Calendar.MONTH),
@@ -429,6 +436,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             qntTotal = Double.valueOf(edtQntTotal.getText().toString().replace(",", "."));
         }
+        try {
+            vencimento.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(edtValidade.getText().toString()));
+            dpkValidade.updateDate(
+                    vencimento.get(Calendar.YEAR),
+                    vencimento.get(Calendar.MONTH),
+                    vencimento.get(Calendar.DAY_OF_MONTH)
+            );
+        } catch (ParseException e) {
+            throw new IOException("Data inválida", e);
+        }
+
         vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
 
         buscarProdutoPorEan();
@@ -724,6 +742,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntNaEmb = findViewById(R.id.edtQntNaEmb);
         edtQntEmb = findViewById(R.id.edtQntEmb);
         edtQntTotal = findViewById(R.id.edtQntTotal);
+        edtValidade = findViewById(R.id.edtValidade);
 
         txvRazaoSocial = findViewById(R.id.txvRazaoSocial);
         txvDataMvto = findViewById(R.id.txvDataMvto);
@@ -759,6 +778,7 @@ public class MainActivity extends AppCompatActivity {
         btnLogout.setOnClickListener(btnLogout_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
+        edtValidade.setOnFocusChangeListener(edtValidade_FocusChange());
 
         listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
 
@@ -807,6 +827,26 @@ public class MainActivity extends AppCompatActivity {
                 edtQntEmb.isFocused() ||
                 btnLancar.isFocused() ||
                 btnAlterarItem.isFocused();
+    }
+
+    private View.OnFocusChangeListener edtValidade_FocusChange() {
+        return new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus) {
+                    try {
+                        vencimento.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(edtValidade.getText().toString()));
+                        dpkValidade.updateDate(
+                                vencimento.get(Calendar.YEAR),
+                                vencimento.get(Calendar.MONTH),
+                                vencimento.get(Calendar.DAY_OF_MONTH)
+                        );
+                    } catch (ParseException e) {
+                        Toast.makeText(getApplicationContext(), "Data inválida - " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        };
     }
 
     private View.OnFocusChangeListener edtEan_FocusChange() {
