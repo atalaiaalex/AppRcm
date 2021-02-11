@@ -3,6 +3,7 @@ package br.com.supermercadoatalaia.apprcm;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -437,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
             qntTotal = Double.valueOf(edtQntTotal.getText().toString().replace(",", "."));
         }
         try {
-            vencimento.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(edtValidade.getText().toString()));
+            vencimento.setTime(new SimpleDateFormat("dd/MM/yy").parse(edtValidade.getText().toString()));
             dpkValidade.updateDate(
                     vencimento.get(Calendar.YEAR),
                     vencimento.get(Calendar.MONTH),
@@ -733,6 +735,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void initComponents() {
         setContentView(R.layout.activity_main);
 
@@ -782,10 +785,25 @@ public class MainActivity extends AppCompatActivity {
 
         listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
 
+        //dpkValidade.setOnFocusChangeListener(dpkValidade_FocusChange());
+        //Procurar um evento que perceba mudança no spiner
+
         txvUsuario.setText(
                 "Usuário: " +
                 SharedPrefManager.getInstance(getApplicationContext()).getUsuario().getNome()
         );
+    }
+
+    private View.OnFocusChangeListener dpkValidade_FocusChange() {
+        return new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus) {
+                    vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
+                    edtValidade.setText(String.format("%1$te/%1$tm/%1$ty", vencimento));
+                }
+            }
+        };
     }
 
     private void initPermissoes () {
@@ -835,7 +853,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus) {
                     try {
-                        vencimento.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(edtValidade.getText().toString()));
+                        vencimento.setTime(new SimpleDateFormat("dd/MM/yy").parse(edtValidade.getText().toString()));
                         dpkValidade.updateDate(
                                 vencimento.get(Calendar.YEAR),
                                 vencimento.get(Calendar.MONTH),
