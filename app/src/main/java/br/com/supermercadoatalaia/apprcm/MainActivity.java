@@ -123,30 +123,30 @@ public class MainActivity extends AppCompatActivity {
                 //Fix for pressing delete next to a forward slash
                 if (clean.equals(cleanC)) sel--;
 
-                if (clean.length() < 6){
+                if (clean.length() < 8){
                     clean = clean + ddmmyyyy.substring(clean.length());
                 }else{
                     //This part makes sure that when we finish entering numbers
                     //the date is correct, fixing it otherwise
                     int day  = Integer.parseInt(clean.substring(0,2));
                     int mon  = Integer.parseInt(clean.substring(2,4));
-                    int year = Integer.parseInt(clean.substring(4,6));
+                    int year = Integer.parseInt(clean.substring(4,8));
 
                     mon = mon < 1 ? 1 : mon > 12 ? 12 : mon;
                     cal.set(Calendar.MONTH, mon-1);
-                    //year = (year<1900)?1900:(year>2100)?2100:year;
+                    year = (year<1900)?1900:(year>2100)?2100:year;
                     cal.set(Calendar.YEAR, year);
                     // ^ first set year for the line below to work correctly
                     //with leap years - otherwise, date e.g. 29/02/2012
                     //would be automatically corrected to 28/02/2012
 
-                    day = (day > cal.getActualMaximum(Calendar.DATE))? cal.getActualMaximum(Calendar.DATE):day;
+                    day = (day > cal.getActualMaximum(Calendar.DATE))? cal.getActualMaximum(Calendar.DATE) : day;
                     clean = String.format("%02d%02d%02d",day, mon, year);
                 }
 
                 clean = String.format("%s/%s/%s", clean.substring(0, 2),
                         clean.substring(2, 4),
-                        clean.substring(4, 6));
+                        clean.substring(4, 8));
 
                 sel = sel < 0 ? 0 : sel;
                 current = clean;
@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb.setText("");
         edtQntNaEmb.setText("");
         edtQntTotal.setText("");
-        edtValidade.setText(String.format("%1$te/%1$tm/%1$ty", vencimento));
+        //edtValidade.setText(String.format("%1$te/%1$tm/%1$tY", vencimento));
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -439,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
             edtQntEmb.setText("");
         }
 
-        edtValidade.setText(String.format("%1$te/%1$tm/%1$ty", vencimento));
+        edtValidade.setText(String.format("%1$te/%1$tm/%1$tY", vencimento));
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -503,7 +503,7 @@ public class MainActivity extends AppCompatActivity {
             qntTotal = Double.valueOf(edtQntTotal.getText().toString().replace(",", "."));
         }
         try {
-            vencimento.setTime(new SimpleDateFormat("dd/MM/yy").parse(edtValidade.getText().toString()));
+            vencimento.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(edtValidade.getText().toString()));
             dpkValidade.updateDate(
                     vencimento.get(Calendar.YEAR),
                     vencimento.get(Calendar.MONTH),
@@ -844,7 +844,8 @@ public class MainActivity extends AppCompatActivity {
         btnLogout.setOnClickListener(btnLogout_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
-        edtValidade.setOnFocusChangeListener(edtValidade_FocusChange());
+        //edtValidade.setOnFocusChangeListener(edtValidade_FocusChange());
+        //Verifica se dois listener estavam atrapalhando
         edtValidade.addTextChangedListener(textWatcher);
 
         listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
@@ -868,7 +869,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
-                edtValidade.setText(String.format("%1$te/%1$tm/%1$ty", vencimento));
+                edtValidade.setText(String.format("%1$te/%1$tm/%1$tY", vencimento));
             }
         };
     }
@@ -920,7 +921,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus) {
                     try {
-                        vencimento.setTime(new SimpleDateFormat("dd/MM/yy").parse(edtValidade.getText().toString()));
+                        vencimento.setTime(new SimpleDateFormat("dd/MM/yyyy").parse(edtValidade.getText().toString()));
                         dpkValidade.updateDate(
                                 vencimento.get(Calendar.YEAR),
                                 vencimento.get(Calendar.MONTH),
