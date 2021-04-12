@@ -20,11 +20,10 @@ public class MaskDateTextWatcher {
             year = (year<1900)?1900:(year>2100)?2100:year; //Para ano com 4 digitos
             cal.set(Calendar.YEAR, year);
             //Setar ano e mes primeiro para não ter problema em fevereiro com ano bisexto
-            day = (day > cal.getActualMaximum(Calendar.DATE))? cal.getActualMaximum(Calendar.DATE) : day;
-            clean = String.format("%02d%02d%02d",day, mon, year);
-        }
+            day = (day > cal.getActualMaximum(Calendar.DAY_OF_MONTH)) ? cal.getActualMaximum(Calendar.DAY_OF_MONTH) : day;
 
-        if(clean.length() >= 8) {
+            clean = String.format("%02d%02d%04d",day, mon, year);
+
             return String.format("%s/%s/%s", clean.substring(0, 2),
                     clean.substring(2, 4),
                     clean.substring(4, 8));
@@ -41,14 +40,13 @@ public class MaskDateTextWatcher {
                     clean.substring(2, 4),
                     clean.substring(4, 5));
         }else if(clean.length() == 4) {
-            return String.format("%s/%s/", clean.substring(0, 2),
+            return String.format("%s/%s", clean.substring(0, 2),
                     clean.substring(2, 4));
         }else if(clean.length() == 3) {
-            return String.format("%s/%s", clean.substring(0, 2), clean.substring(2, 3));
-        }else if(clean.length() == 2) {
-            return String.format("%s/", clean.substring(0, 2));
+            return String.format("%s/%s", clean.substring(0, 2),
+                    clean.substring(2, 3));
+        }else {
+            return String.format("%s", clean);
         }
-
-        return data;
     }
 }

@@ -296,7 +296,8 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb.setText("");
         edtQntNaEmb.setText("");
         edtQntTotal.setText("");
-        //edtValidade.setText(String.format("%1$te/%1$tm/%1$tY", vencimento));
+        edtValidade.setText(String.format("%1$td/%1$tm/%1$tY", vencimento));
+        edtValidade.setSelection(edtValidade.length());
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -378,7 +379,8 @@ public class MainActivity extends AppCompatActivity {
             edtQntEmb.setText("");
         }
 
-        edtValidade.setText(String.format("%1$te/%1$tm/%1$tY", vencimento));
+        edtValidade.setText(String.format("%1$td/%1$tm/%1$tY", vencimento));
+        edtValidade.setSelection(edtValidade.length());
 
         dpkValidade.updateDate(
                 vencimento.get(Calendar.YEAR),
@@ -840,7 +842,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
-                edtValidade.setText(String.format("%1$te/%1$tm/%1$tY", vencimento));
+                edtValidade.setText(String.format("%1$td/%1$tm/%1$tY", vencimento));
+                edtValidade.setSelection(edtValidade.length());
             }
         };
     }
