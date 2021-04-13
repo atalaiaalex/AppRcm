@@ -49,7 +49,6 @@ public class LancamentoColetaAdapter extends BaseAdapter {
             layout = view;
         }
 
-        TextView txvListItemId = layout.findViewById(R.id.txvListItemId);
         TextView txvListItemDescricao = layout.findViewById(R.id.txvListItemDescricao);
         TextView txvListItemQntNaEmb = layout.findViewById(R.id.txvListItemQntNaEmb);
         TextView txvListItemQntEmb = layout.findViewById(R.id.txvListItemQntEmb);
@@ -59,7 +58,6 @@ public class LancamentoColetaAdapter extends BaseAdapter {
         if(!itens.isEmpty()) {
             LancamentoColeta item = getItem(i);
 
-            txvListItemId.setText(String.format("%d",item.getProdutoId()));
             txvListItemDescricao.setText(item.getProdutoDescricao());
             txvListItemQntNaEmb.setText(String.format("%1$,.2f", item.getQntNaEmb()));
             txvListItemQntEmb.setText(String.format("%1$,.2f", item.getQntEmb()));

@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -95,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
     private Button btnNovaColeta;
     private Button btnIniciarColeta;
     private Button btnLogout;
+
+    private ImageButton btiScanner;
 
     private DatePicker dpkValidade;
 
@@ -267,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntTotal.setEnabled(false);
         edtValidade.setEnabled(false);
         dpkValidade.setEnabled(false);
+        btiScanner.setEnabled(false);
     }
 
     private void habilitarCamposItem() {
@@ -276,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntTotal.setEnabled(true);
         edtValidade.setEnabled(true);
         dpkValidade.setEnabled(true);
+        btiScanner.setEnabled(true);
     }
 
     private void iniciarNovoItem() {
@@ -769,6 +774,8 @@ public class MainActivity extends AppCompatActivity {
         btnIniciarColeta = findViewById(R.id.btnIniciarColeta);
         btnLogout = findViewById(R.id.btnLogout);
 
+        btiScanner = findViewById(R.id.btiScanner);
+
         dpkValidade = findViewById(R.id.dpkValidade);
 
         listLancamentoColeta = findViewById(R.id.listLancamentoColeta);
@@ -783,6 +790,8 @@ public class MainActivity extends AppCompatActivity {
         btnIniciarColeta.setOnClickListener(btnSalvarColeta_Click());
         btnNovaColeta.setOnClickListener(btnNovaColeta_Click());
         btnLogout.setOnClickListener(btnLogout_Click());
+
+        btiScanner.setOnClickListener(btiScanner_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
         edtValidade.addTextChangedListener(edtValidade_TextChanged());
@@ -893,9 +902,7 @@ public class MainActivity extends AppCompatActivity {
         return new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
-                if(hasFocus) {
-                    abrirLeitura();
-                } else if(isFocusBuscaEan()) {
+                if(isFocusBuscaEan()) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -914,6 +921,15 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 }
+            }
+        };
+    }
+
+    private View.OnClickListener btiScanner_Click() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                abrirLeitura();
             }
         };
     }

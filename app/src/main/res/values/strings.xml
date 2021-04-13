@@ -23,7 +23,7 @@
     <string name="coluna_item_qnt_na_emb">Qnt. na Emb.</string>
     <string name="coluna_item_qnt_emb">Qnt. de Emb.</string>
     <string name="coluna_item_qnt_total">Qnt. Total</string>
-    <string name="coluna_item_vencimento">Vencimento</string>
+    <string name="coluna_item_vencimento">Venc.</string>
 
     <string name="hint_qnt_total">QNT Total</string>
     <string name="hint_qnt_emb">QNT de Emb.</string>
