@@ -222,6 +222,8 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarItem.setText(R.string.botao_alterar);
         btnExcluirItem.setEnabled(false);
 
+        btiScanner.setEnabled(true);
+
         habilitarCamposItem();
     }
 
@@ -230,6 +232,8 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarItem.setText(R.string.botao_salvar);
         btnLimpar.setEnabled(true);
         btnLimpar.setText(R.string.botao_cancelar);
+
+        btiScanner.setEnabled(true);
 
         btnLancar.setEnabled(false);
         btnExcluirItem.setEnabled(false);
@@ -242,6 +246,7 @@ public class MainActivity extends AppCompatActivity {
         desabilitarCamposItem();
 
         btnLancar.setEnabled(false);
+        btiScanner.setEnabled(false);
     }
 
     private void habilitarCamposColeta() {
@@ -254,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
         btnLimpar.setEnabled(false);
         btnAlterarItem.setEnabled(false);
         btnExcluirItem.setEnabled(false);
+        btiScanner.setEnabled(false);
     }
 
     private void habilitarBotoesItem() {
@@ -261,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
         btnLimpar.setEnabled(true);
         btnAlterarItem.setEnabled(true);
         btnExcluirItem.setEnabled(true);
+        btiScanner.setEnabled(true);
     }
 
     private void desabilitarCamposItem() {
@@ -270,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
         edtQntTotal.setEnabled(false);
         edtValidade.setEnabled(false);
         dpkValidade.setEnabled(false);
-        btiScanner.setEnabled(false);
     }
 
     private void habilitarCamposItem() {
@@ -280,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
         edtQntTotal.setEnabled(true);
         edtValidade.setEnabled(true);
         dpkValidade.setEnabled(true);
-        btiScanner.setEnabled(true);
     }
 
     private void iniciarNovoItem() {
