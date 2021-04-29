@@ -31,6 +31,7 @@
     <string name="hint_ean">EAN</string>
     <string name="hint_nota_fiscal">Nota Fiscal</string>
     <string name="hint_cnpj">CNPJ</string>
+    <string name="hint_chave">Chave</string>
     <string name="hint_validade">Validade</string>
     <string name="hint_usuario">Digite o usuário</string>
     <string name="hint_senha">Digite sua senha</string>

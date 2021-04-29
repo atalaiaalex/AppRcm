@@ -3,10 +3,10 @@ package br.com.supermercadoatalaia.apprcm;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -17,10 +17,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import java.io.IOException;
 import java.net.URL;
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText edtQntEmb;
     private EditText edtQntTotal;
     private EditText edtValidade;
+    private EditText edtChave;
 
     private TextView txvRazaoSocial;
     private TextView txvDataMvto;
@@ -97,7 +100,8 @@ public class MainActivity extends AppCompatActivity {
     private Button btnIniciarColeta;
     private Button btnLogout;
 
-    private ImageButton btiScanner;
+    private ImageButton btiScannerEan;
+    private ImageButton btiScannerChave;
 
     private DatePicker dpkValidade;
 
@@ -156,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
         setProduto(new ProdUnidade());
         iniciarNovoItem();
 
+        edtChave.setText("");
         edtCnpjCfp.setText("");
         edtNumeroNotaFiscal.setText("");
         txvDataMvto.setText("");
@@ -167,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mudarBotoesNovaColeta() {
+        btiScannerChave.setEnabled(true);
         btnIniciarColeta.setEnabled(true);
         btnBuscarColeta.setEnabled(true);
 
@@ -174,8 +180,6 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarColeta.setText(R.string.botao_alterar);
         btnExcluirColeta.setEnabled(false);
         btnExcluirColeta.setText(R.string.botao_excluir);
-
-        listLancamentoColeta.setEnabled(false);
 
         habilitarCamposColeta();
         desabilitarBotoesItem();
@@ -188,8 +192,7 @@ public class MainActivity extends AppCompatActivity {
         btnExcluirColeta.setEnabled(true);
         btnExcluirColeta.setText(R.string.botao_excluir);
 
-        listLancamentoColeta.setEnabled(true);
-
+        btiScannerChave.setEnabled(false);
         btnIniciarColeta.setEnabled(false);
         btnBuscarColeta.setEnabled(false);
 
@@ -202,18 +205,15 @@ public class MainActivity extends AppCompatActivity {
         btnExcluirColeta.setEnabled(true);
         btnExcluirColeta.setText(R.string.botao_cancelar);
 
+        btiScannerChave.setEnabled(false);
         btnIniciarColeta.setEnabled(false);
         btnBuscarColeta.setEnabled(false);
-
-        listLancamentoColeta.setEnabled(false);
 
         desabilitarBotoesItem();
         desabilitarCamposItem();
     }
 
     private void mudarBotoesIniciarItem() {
-        listLancamentoColeta.setEnabled(true);
-
         btnLancar.setEnabled(true);
         btnLimpar.setEnabled(true);
         btnLimpar.setText(R.string.botao_limpar);
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
         btnAlterarItem.setText(R.string.botao_alterar);
         btnExcluirItem.setEnabled(false);
 
-        btiScanner.setEnabled(true);
+        btiScannerEan.setEnabled(true);
 
         habilitarCamposItem();
     }
@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         btnLimpar.setEnabled(true);
         btnLimpar.setText(R.string.botao_cancelar);
 
-        btiScanner.setEnabled(true);
+        btiScannerEan.setEnabled(true);
 
         btnLancar.setEnabled(false);
         btnExcluirItem.setEnabled(false);
@@ -246,10 +246,11 @@ public class MainActivity extends AppCompatActivity {
         desabilitarCamposItem();
 
         btnLancar.setEnabled(false);
-        btiScanner.setEnabled(false);
+        btiScannerEan.setEnabled(false);
     }
 
     private void habilitarCamposColeta() {
+        edtChave.setEnabled(true);
         edtCnpjCfp.setEnabled(true);
         edtNumeroNotaFiscal.setEnabled(true);
     }
@@ -259,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
         btnLimpar.setEnabled(false);
         btnAlterarItem.setEnabled(false);
         btnExcluirItem.setEnabled(false);
-        btiScanner.setEnabled(false);
+        btiScannerEan.setEnabled(false);
     }
 
     private void habilitarBotoesItem() {
@@ -267,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         btnLimpar.setEnabled(true);
         btnAlterarItem.setEnabled(true);
         btnExcluirItem.setEnabled(true);
-        btiScanner.setEnabled(true);
+        btiScannerEan.setEnabled(true);
     }
 
     private void desabilitarCamposItem() {
@@ -288,11 +289,27 @@ public class MainActivity extends AppCompatActivity {
         dpkValidade.setEnabled(true);
     }
 
-    private void iniciarNovoItem() {
+    private void ajustaListLancamentoColeta() {
         listLancamentoColeta.setAdapter(
                 new LancamentoColetaAdapter(coleta.getItens(), this)
         );
 
+        int numLinha = listLancamentoColeta.getAdapter().getCount();
+        listLancamentoColeta.getLayoutParams().height = 100;
+
+        if(numLinha > 0) {
+            listLancamentoColeta.setNestedScrollingEnabled(true);
+            if(numLinha > 2) {
+                listLancamentoColeta.getLayoutParams().height = 300;
+            }else if(numLinha > 1) {
+                listLancamentoColeta.getLayoutParams().height = 200;
+            }
+        }else {
+            listLancamentoColeta.setNestedScrollingEnabled(false);
+        }
+    }
+
+    private void iniciarNovoItem() {
         habilitarCamposItem();
 
         vencimento = Calendar.getInstance();
@@ -314,6 +331,8 @@ public class MainActivity extends AppCompatActivity {
                 vencimento.get(Calendar.MONTH),
                 vencimento.get(Calendar.DAY_OF_MONTH)
         );
+
+        ajustaListLancamentoColeta();
     }
 
     private void preencherCampos() throws ApiException, IOException {
@@ -337,12 +356,11 @@ public class MainActivity extends AppCompatActivity {
         );
         txvUnidade.setText("Unid." + pedidos.get(0).getUnidade());
 
+        edtChave.setEnabled(false);
         edtCnpjCfp.setEnabled(false);
         edtNumeroNotaFiscal.setEnabled(false);
 
-        listLancamentoColeta.setAdapter(
-                new LancamentoColetaAdapter(coleta.getItens(), this)
-        );
+        ajustaListLancamentoColeta();
     }
 
     private void preencherCamposItensDoList() {
@@ -438,17 +456,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setQntsValidadeItem() throws ApiException, IOException {
-        if(edtQntNaEmb.getText().toString().isEmpty()) {
+        if(edtQntNaEmb.getText().toString().length() == 0) {
             qntNaEmb = 0D;
         } else {
             qntNaEmb = Double.valueOf(edtQntNaEmb.getText().toString().replace(",", "."));
         }
-        if(edtQntEmb.getText().toString().isEmpty()) {
+        if(edtQntEmb.getText().toString().length() == 0) {
             qntEmb = 0D;
         } else {
             qntEmb = Double.valueOf(edtQntEmb.getText().toString().replace(",", "."));
         }
-        if(edtQntTotal.getText().toString().isEmpty()) {
+        if(edtQntTotal.getText().toString().length() == 0) {
             qntTotal = 0D;
         } else {
             qntTotal = Double.valueOf(edtQntTotal.getText().toString().replace(",", "."));
@@ -717,36 +735,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void abrirLeitura() {
-        Intent intent = new Intent(this, LeitorActivity.class);
-
-        startActivityForResult(intent, REQUEST_LEITURA);
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+        integrator.setCaptureActivity(ScannerActivity.class);
+        if(edtChave.getText().length() == 0) {
+            integrator.setPrompt("Focalize a Chave da DANFE.");
+        }else {
+            integrator.setPrompt("Focalize o EAN do produto.");
+        }
+        integrator.initiateScan();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_LEITURA:
-                if (resultCode == LeitorActivity.SUCESSO) {
-                    iniciarNovoItem();
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if(result != null) {
+            iniciarNovoItem();
 
-                    //Dados vindo da intent chamada em modo de espera de resultado.
-                    if (data != null) {
-                        edtEan.setText(data.getStringExtra(LeitorActivity.LEITURA));
-                    } else {
-                        Toast.makeText(
-                                getApplicationContext(),
-                                "Nenhum EAN capturado!",
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
+            if(result.getContents() == null) {
+                Toast.makeText(
+                        getApplicationContext(),
+                        "Nenhum EAN capturado!",
+                        Toast.LENGTH_LONG
+                ).show();
+            } else {
+                if(btiScannerChave.isEnabled()) { //Posso usar até o enable do botão
+                    edtChave.setText(result.getContents());
+                }else if(btiScannerEan.isEnabled()) {
+                    edtEan.setText(result.getContents());
                 }
-                break;
-            case REQUEST_CONSULTA:
-                //Faz outra coisa
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -760,6 +780,7 @@ public class MainActivity extends AppCompatActivity {
         edtQntEmb = findViewById(R.id.edtQntEmb);
         edtQntTotal = findViewById(R.id.edtQntTotal);
         edtValidade = findViewById(R.id.edtValidade);
+        edtChave = findViewById(R.id.edtChave);
 
         txvRazaoSocial = findViewById(R.id.txvRazaoSocial);
         txvDataMvto = findViewById(R.id.txvDataMvto);
@@ -779,7 +800,8 @@ public class MainActivity extends AppCompatActivity {
         btnIniciarColeta = findViewById(R.id.btnIniciarColeta);
         btnLogout = findViewById(R.id.btnLogout);
 
-        btiScanner = findViewById(R.id.btiScanner);
+        btiScannerEan = findViewById(R.id.btiScannerEan);
+        btiScannerChave = findViewById(R.id.btiScannerChave);
 
         dpkValidade = findViewById(R.id.dpkValidade);
 
@@ -796,12 +818,15 @@ public class MainActivity extends AppCompatActivity {
         btnNovaColeta.setOnClickListener(btnNovaColeta_Click());
         btnLogout.setOnClickListener(btnLogout_Click());
 
-        btiScanner.setOnClickListener(btiScanner_Click());
+        btiScannerEan.setOnClickListener(btiScanner_Click());
+        btiScannerChave.setOnClickListener(btiScanner_Click());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
         edtValidade.addTextChangedListener(edtValidade_TextChanged());
+        edtChave.addTextChangedListener(edtChave_TextChanged());
 
         listLancamentoColeta.setOnItemClickListener(listLancamentoColeta_ItemClick());
+        listLancamentoColeta.setNestedScrollingEnabled(false);
 
         Calendar dataAtual = Calendar.getInstance();
         dpkValidade.init(
@@ -815,6 +840,25 @@ public class MainActivity extends AppCompatActivity {
                 "Usuário: " +
                 SharedPrefManager.getInstance(getApplicationContext()).getUsuario().getNome()
         );
+    }
+
+    private TextWatcher edtChave_TextChanged() {
+        return new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(edtChave.length() == 44) {
+                    edtCnpjCfp.setText(edtChave.getText().subSequence(6, 20));
+                    //edtSerie.setText(edtChave.getText().subSequence(22, 25));
+                    edtNumeroNotaFiscal.setText(edtChave.getText().subSequence(25, 34));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+        };
     }
 
     private TextWatcher edtValidade_TextChanged() {
@@ -888,9 +932,11 @@ public class MainActivity extends AppCompatActivity {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                setItem((LancamentoColeta) adapterView.getItemAtPosition(i));
-                mudarBotoesClickList();
-                preencherCamposItensDoList();
+                if(listLancamentoColeta.getAdapter().getCount() > 0) {
+                    setItem((LancamentoColeta) adapterView.getItemAtPosition(i));
+                    mudarBotoesClickList();
+                    preencherCamposItensDoList();
+                }
             }
         };
     }

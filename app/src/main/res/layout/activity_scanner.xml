@@ -2,22 +2,25 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fl_scanner"
+    xmlns:zxing_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LeitorActivity">
+    tools:context=".ScannerActivity">
 
-    <me.dm7.barcodescanner.zxing.ZXingScannerView
-        android:id="@+id/z_xing_scanner"
+    <com.journeyapps.barcodescanner.CompoundBarcodeView
+        android:id="@+id/zxing_barcode_scanner"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        zxing_view:zxing_scanner_layout="@layout/custom_barcode_scanner">
+
+    </com.journeyapps.barcodescanner.CompoundBarcodeView>
 
     <ImageButton
         android:id="@+id/btnSairCamera"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
         android:layout_marginTop="20dp"
         android:background="#00FFFFFF"
         android:contentDescription="@string/botao_sair"
@@ -29,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
-        android:layout_marginStart="20dp"
+        android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:background="#00FFFFFF"
         android:contentDescription="@string/botao_flash"
