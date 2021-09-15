@@ -5,29 +5,30 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Base64;
-import android.util.JsonReader;
-import android.util.JsonToken;
-import android.util.JsonWriter;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
+import br.com.supermercadoatalaia.apprcm.config.RetrofitAtalaiaConfig;
+import br.com.supermercadoatalaia.apprcm.config.RetrofitFlexConfig;
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
-import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
-import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
+import br.com.supermercadoatalaia.apprcm.domain.model.AutenticarSessao;
+import br.com.supermercadoatalaia.apprcm.domain.model.RespostaAutenticacao;
+import br.com.supermercadoatalaia.apprcm.domain.model.RespostaRCMInserir;
+import br.com.supermercadoatalaia.apprcm.domain.model.UserLogin;
 import br.com.supermercadoatalaia.apprcm.domain.model.Usuario;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -79,103 +80,55 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            try {
-                Usuario usuario = new Usuario(0L, "", username, password, false);
+            UserLogin user = new UserLogin(username, password);
 
-                apiConsumer.login(
-                        "POST",
-                        new URL(ApiConsumer.USUARIO),
-                        getApplicationContext(),
-                        usuario
-                );
-                apiConsumer.addCabecalho("Content-Type", "application/json");
-                apiConsumer.addCabecalho("Accept", "application/json");
+            Call<Usuario> call = new RetrofitAtalaiaConfig().getLoginService().login(user);
 
-                setUsuario(
-                        apiConsumer.getJsonWriter(),
-                        usuario
-                );
+            call.enqueue(new Callback<Usuario>() {
+                @Override
+                public void onResponse(Call<Usuario> call, Response<Usuario> response) {
 
-                JsonReader jsonReader = apiConsumer.getJsonReader();
-                HttpResposta httpResposta = apiConsumer.getHttpResposta();
+                    Usuario user = response.body();
+                    user.setPassword(password);
 
-                if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-                    SharedPrefManager.getInstance(getApplicationContext())
-                            .userLogin(instanciarUsuario(jsonReader));
+                    Call<RespostaAutenticacao> callFlex = new RetrofitFlexConfig()
+                            .getLoginService().login(
+                                    new AutenticarSessao("100000", "272108")
+                            );
 
-                    SharedPrefManager.getInstance(getApplicationContext())
-                            .getUsuario().setPassword(password);
+                    Log.i("LoginFlexService", "Iniciando Login");
 
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                } else if(httpResposta.getCode() == 401) {
-                    Toast.makeText(
-                            getApplicationContext(),
-                            httpResposta.getMensagem(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                } else {
-                    Toast.makeText(
-                            getApplicationContext(),
-                            new ApiException(httpResposta, jsonReader).getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    callFlex.enqueue(new Callback<RespostaAutenticacao>() {
+                        @Override
+                        public void onResponse(Call<RespostaAutenticacao> call,
+                                               Response<RespostaAutenticacao> response) {
+
+                            Log.i("LoginFlexService", "Logado, instanciando resposta");
+
+                            RespostaAutenticacao respostaAutenticacao = response.body();
+                            String token = respostaAutenticacao.getResponse().getToken();
+
+                            Log.i("LoginFlexService", "Token obtido \n\t\t" + token);
+
+                            SharedPrefManager.getInstance(getApplicationContext())
+                                    .userLogin(user, token);
+
+                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        }
+
+                        @Override
+                        public void onFailure(Call<RespostaAutenticacao> call, Throwable t) {
+                            Log.e("LoginFlexService   ", "Erro ao efetuar login :: " + t.getMessage());
+                        }
+                    });
                 }
 
-                apiConsumer.fecharConexao();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(getApplicationContext(), "Falha na conexão", Toast.LENGTH_LONG).show();
-            }
+                @Override
+                public void onFailure(Call<Usuario> call, Throwable t) {
+                    Log.e("LoginService   ", "Erro ao efetuar login :: " + t.getMessage());
+                }
+            });
         };
-    }
-
-    private void setUsuario(JsonWriter jsonWriter, Usuario usuario) throws IOException {
-        jsonWriter.setIndent("  ");
-        jsonWriter.beginObject();
-        jsonWriter.name("id").value(usuario.getId());
-        jsonWriter.name("nome").value(usuario.getNome());
-        jsonWriter.name("login").value(usuario.getLogin());
-        jsonWriter.name("senha").value(usuario.getPassword());
-        jsonWriter.name("ativo").value(usuario.isAtivo());
-        jsonWriter.endObject();
-        jsonWriter.close();
-    }
-
-    private Usuario instanciarUsuario(JsonReader jsonReader) throws IOException {
-        Long id = 0L;
-        String nome = "";
-        String login = "";
-        String password = "";
-        boolean ativo = false;
-
-        jsonReader.beginObject();
-        while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("id")) {
-                id = jsonReader.nextLong();
-            } else if(key.equals("nome") && jsonReader.peek() != JsonToken.NULL) {
-                nome = jsonReader.nextString();
-            } else if(key.equals("username") && jsonReader.peek() != JsonToken.NULL) {
-                login = jsonReader.nextString();
-            } else if(key.equals("password") && jsonReader.peek() != JsonToken.NULL) {
-                password = txtPassword.getText().toString();
-                jsonReader.skipValue();
-            } else if(key.equals("enabled") && jsonReader.peek() != JsonToken.NULL) {
-                ativo = jsonReader.nextBoolean();
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-        jsonReader.close();
-
-        return new Usuario(
-                id,
-                nome,
-                login,
-                password,
-                ativo
-        );
     }
 
     private void initComponent() {

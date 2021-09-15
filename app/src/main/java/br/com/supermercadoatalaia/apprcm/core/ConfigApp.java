@@ -15,6 +15,8 @@ public class ConfigApp {
     public static final String PASTA_CONFIG = "config";
     private static final String NOME_CONFIG = "app.conf";
 
+    public static String SERVER;
+
     public ConfigApp(String pasta){
         this.pasta = pasta;
     }
@@ -34,6 +36,8 @@ public class ConfigApp {
                 throw new IOException("Arquivo com configuração inválida!");
             }
 
+            SERVER = linha;
+
             return linha;
         }
 
@@ -41,16 +45,12 @@ public class ConfigApp {
     }
 
     public void salvarTxt (String dado) throws IOException {
-        /*
-        try {
-            new File(pasta + "/" + NOME_CONFIG).delete();
-        } catch(Exception e) { }
-        */
 
         FileWriter arquivo = new FileWriter(pasta + "/" + NOME_CONFIG);
         PrintWriter outputStream;
 
         outputStream = new PrintWriter(arquivo);
+        SERVER = dado;
         outputStream.println(dado);
         arquivo.flush();
         arquivo.close();

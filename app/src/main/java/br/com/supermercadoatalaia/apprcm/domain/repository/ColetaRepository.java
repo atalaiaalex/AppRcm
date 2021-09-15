@@ -11,17 +11,29 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import br.com.supermercadoatalaia.apprcm.config.RetrofitFlexConfig;
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
+import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
+import br.com.supermercadoatalaia.apprcm.domain.model.AutenticarSessao;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
+import br.com.supermercadoatalaia.apprcm.domain.model.RCMFlex;
+import br.com.supermercadoatalaia.apprcm.domain.model.RCMProduto;
+import br.com.supermercadoatalaia.apprcm.domain.model.RespostaAutenticacao;
+import br.com.supermercadoatalaia.apprcm.domain.model.RespostaRCMInserir;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ColetaRepository {
 
@@ -143,6 +155,81 @@ public class ColetaRepository {
         apiConsumer.fecharConexao();
 
         return coleta;
+    }
+
+    public void salvarRCMFlex(Coleta coleta, LancamentoColeta item) {
+        Call<RespostaRCMInserir> callRcm = new RetrofitFlexConfig()
+                .getRCMFlexService().inserirRCM(
+                        SharedPrefManager.getInstance(context).getTokenFlex(),
+                        toRCMFlex(coleta, item)
+                );
+
+        Log.i("RCMService", "Iniciando processo de inserção");
+
+        callRcm.enqueue(new Callback<RespostaRCMInserir>() {
+            @Override
+            public void onResponse(Call<RespostaRCMInserir> call, Response<RespostaRCMInserir> response) {
+                RespostaRCMInserir respostaRCMInserir = response.body();
+                Log.i(
+                        "RCMService",
+                        "Sucesso ao inserir coletagem" + respostaRCMInserir.getResponse().getMessagesToString()
+                );
+            }
+
+            @Override
+            public void onFailure(Call<RespostaRCMInserir> call, Throwable t) {
+                Log.e("RCMService", "Erro ao inserir coletagem :: " + t.getMessage());
+            }
+        });
+    }
+
+    private String unidadeToCnpj(String unidade) {
+        switch(unidade) {
+            case "001": return "07188408000269";
+            case "002": return "07188408000188";
+            case "003": return "12389990000180";
+        }
+
+        return "";
+    }
+
+    private Long unidadeToDcto(String unidade) {
+        switch(unidade) {
+            case "001": return 7523L;
+            case "002": return 7524L;
+            case "003": return 7525L;
+        }
+
+        return 0L;
+    }
+
+    private RCMFlex toRCMFlex(Coleta coleta, LancamentoColeta item) {
+        List<RCMProduto> produtos = new ArrayList<>();
+
+        produtos.add(new RCMProduto(
+                    item.getProdutoId(),
+                    (item.getQntEmb() == 0D ? item.getQntTotal() : item.getQntEmb()),
+                    item.getQntNaEmb().longValue(),
+                    String.format("%1$td/%1$tm/%1$tY", Calendar.getInstance()),
+                    String.format("%1$td/%1$tm/%1$tY", item.getVencimento()),
+                    0.0,
+                    0L,
+                    0L,
+                    "0"
+        ));
+
+        Log.i("RCMProduto", produtos.get(0).toString());
+
+        return new RCMFlex(
+                unidadeToCnpj(coleta.getUnidade()),
+                unidadeToDcto(coleta.getUnidade()),
+                String.valueOf(coleta.getNumeroNotaFiscal()),
+                coleta.getSerie(),
+                String.format("%1$td/%1$tm/%1$tY", coleta.getDataMovimento()),
+                "FORNECEDOR",
+                String.valueOf(coleta.getFornecedorId()),
+                produtos
+        );
     }
 
     public Coleta atualizar(Coleta coleta) throws ApiException, IOException, ParseException {

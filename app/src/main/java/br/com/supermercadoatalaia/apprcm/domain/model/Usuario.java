@@ -1,25 +1,18 @@
 package br.com.supermercadoatalaia.apprcm.domain.model;
 
-import java.io.Serializable;
-
-public class Usuario implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Usuario extends UserLogin {
 
     private Long id;
     private String nome;
-    private String login;
-    private String password;
-    private boolean ativo;
 
-    public Usuario() {}
+    public Usuario() {
+        super();
+    }
 
-    public Usuario(Long id, String nome, String login, String password, boolean ativo) {
+    public Usuario(Long id, String nome, String username, String password) {
+        super(username, password);
         this.id = id;
         this.nome = nome;
-        this.login = login;
-        this.password = password;
-        this.ativo = ativo;
     }
 
     public Long getId() {
@@ -36,29 +29,5 @@ public class Usuario implements Serializable {
 
     public void setNome(String nome) {
         this.nome = nome;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
     }
 }

@@ -676,6 +676,10 @@ public class MainActivity extends AppCompatActivity {
             setItemParaSalvar();
             item = coletaController.salvarItemColeta(coleta, item);
             coleta.getItens().add(item);
+            if(coleta.getItens().size() == 1) {
+                Log.i("Main salvar coleta", "tem 1 item na lista");
+                coletaController.salvarColetaFlex(coleta, item);
+            }
             mudarBotoesIniciarItem();
             iniciarNovoItem();
         } catch (ApiException apie) {
@@ -710,8 +714,15 @@ public class MainActivity extends AppCompatActivity {
             int indexItem = coleta.getItens().indexOf(item);
             coletaController.deletarItemColeta(coleta, item);
             coleta.getItens().remove(indexItem);
-            mudarBotoesIniciarItem();
-            iniciarNovoItem();
+            if(coleta.getItens().size() > 0) {
+                mudarBotoesIniciarItem();
+                iniciarNovoItem();
+            }else {
+                coletaController.deletarColeta(coleta);
+                mudarBotoesIniciarColeta();
+                iniciarNovaColeta();
+                Toast.makeText(this, "Coleta deletada por falta de itens!", Toast.LENGTH_LONG).show();
+            }
         } catch (ApiException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {

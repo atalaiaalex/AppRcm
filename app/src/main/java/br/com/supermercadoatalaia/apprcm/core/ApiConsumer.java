@@ -96,7 +96,7 @@ public class ApiConsumer {
 
     private void autenticar(Usuario usuario) {
         addCabecalho("Authorization", "Basic " +
-                Base64.encodeToString((usuario.getLogin()+":"+usuario.getPassword())
+                Base64.encodeToString((usuario.getUsername()+":"+usuario.getPassword())
                         .getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)
         );
     }
