@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RespostaAutenticacao implements Serializable {
+public class AutenticacaoResponse implements Serializable {
 
     @Getter
     @Setter

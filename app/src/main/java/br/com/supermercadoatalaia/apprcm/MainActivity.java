@@ -37,6 +37,7 @@ import java.util.Set;
 import br.com.supermercadoatalaia.apprcm.adapter.LancamentoColetaAdapter;
 import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
 import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
+import br.com.supermercadoatalaia.apprcm.controller.LoginController;
 import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
 import br.com.supermercadoatalaia.apprcm.controller.ProdutoController;
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
@@ -498,19 +499,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        ApiConsumer apiConsumer = new ApiConsumer();
-
-        try {
-            apiConsumer.iniciarConexao(
-                    "GET",
-                    new URL(ApiConsumer.LOGOUT),
-                    getApplicationContext()
-            );
-            apiConsumer.processarComResposta();
-            SharedPrefManager.getInstance(getApplicationContext()).logout();
-        } catch (IOException e) {
-
-        }
+        new LoginController(getApplicationContext()).logout();
     }
 
     private String ean13(String ean) {

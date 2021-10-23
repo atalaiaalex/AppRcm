@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Base64;
+import android.util.Log;
 
 import java.nio.charset.Charset;
 
@@ -19,6 +20,9 @@ public class SharedPrefManager {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_TOKEN_FLEX = "token_flex";
+    private static final String KEY_COOKIE_FLEX = "cookie_flex";
+    private static final String KEY_LOGIN_FLEX = "login_flex";
+    private static final String KEY_PASSWORD_FLEX = "password_flex";
 
     private static SharedPrefManager thisInstance;
     private static Context context;
@@ -31,12 +35,13 @@ public class SharedPrefManager {
         if (thisInstance == null) {
             thisInstance = new SharedPrefManager(context);
         }
+
         return thisInstance;
     }
 
     //method to let the usuario login
     //this method will store the usuario data in shared preferences
-    public void userLogin(Usuario usuario, String tokenFlex) {
+    public void userLogin(Usuario usuario, String tokenFlex, String cookie) {
         SharedPreferences sharedPreferences = getSharedPreferences();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -46,6 +51,9 @@ public class SharedPrefManager {
         editor.putString(KEY_USERNAME, usuario.getUsername());
         editor.putString(KEY_PASSWORD, usuario.getPassword());
         editor.putString(KEY_TOKEN_FLEX, tokenFlex);
+        editor.putString(KEY_COOKIE_FLEX, cookie);
+        editor.putString(KEY_LOGIN_FLEX, usuario.getFlexLogin());
+        editor.putString(KEY_PASSWORD_FLEX, usuario.getFlexSenha());
 
         editor.apply();
     }
@@ -63,7 +71,9 @@ public class SharedPrefManager {
                 sharedPreferences.getLong(KEY_ID, -1L),
                 sharedPreferences.getString(KEY_NOME, null),
                 sharedPreferences.getString(KEY_USERNAME, null),
-                sharedPreferences.getString(KEY_PASSWORD, null)
+                sharedPreferences.getString(KEY_PASSWORD, null),
+                sharedPreferences.getString(KEY_LOGIN_FLEX, ""),
+                sharedPreferences.getString(KEY_PASSWORD_FLEX, "")
         );
     }
 
@@ -77,6 +87,10 @@ public class SharedPrefManager {
     }
 
     public String getAuthorization() {
+        if(!isLoggedIn()) {
+            context.startActivity(new Intent(context, LoginActivity.class));
+        }
+
         UserLogin user = getUserLogin();
 
         return "Basic " + Base64.encodeToString((user.getUsername() + ":" + user.getPassword())
@@ -84,7 +98,15 @@ public class SharedPrefManager {
     }
 
     public String getTokenFlex() {
-        return getSharedPreferences().getString(KEY_TOKEN_FLEX, "");
+        String tokenSalvo = getSharedPreferences().getString(KEY_TOKEN_FLEX, "");
+        //Log.i("Token salvo", tokenSalvo);
+        return tokenSalvo;
+    }
+
+    public String getCookieFlex() {
+        String cookieSalvo = getSharedPreferences().getString(KEY_COOKIE_FLEX, "");
+        //Log.i("Cookie salvo", cookieSalvo);
+        return cookieSalvo;
     }
 
     //this method will logout the user

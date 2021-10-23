@@ -11,8 +11,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -24,12 +22,10 @@ import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
 import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
-import br.com.supermercadoatalaia.apprcm.domain.model.AutenticarSessao;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 import br.com.supermercadoatalaia.apprcm.domain.model.RCMFlex;
 import br.com.supermercadoatalaia.apprcm.domain.model.RCMProduto;
-import br.com.supermercadoatalaia.apprcm.domain.model.RespostaAutenticacao;
 import br.com.supermercadoatalaia.apprcm.domain.model.RespostaRCMInserir;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -161,6 +157,7 @@ public class ColetaRepository {
         Call<RespostaRCMInserir> callRcm = new RetrofitFlexConfig()
                 .getRCMFlexService().inserirRCM(
                         SharedPrefManager.getInstance(context).getTokenFlex(),
+                        SharedPrefManager.getInstance(context).getCookieFlex(),
                         toRCMFlex(coleta, item)
                 );
 
@@ -224,7 +221,7 @@ public class ColetaRepository {
                 unidadeToCnpj(coleta.getUnidade()),
                 unidadeToDcto(coleta.getUnidade()),
                 String.valueOf(coleta.getNumeroNotaFiscal()),
-                coleta.getSerie(),
+                "''",
                 String.format("%1$td/%1$tm/%1$tY", coleta.getDataMovimento()),
                 "FORNECEDOR",
                 String.valueOf(coleta.getFornecedorId()),

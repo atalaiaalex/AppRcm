@@ -10,9 +10,8 @@ import retrofit2.http.POST;
 public interface RCMFlexService {
 
     @POST("v1.1/recmerc/inserir")
-    Call<RespostaRCMInserir> inserirRCM(
-            @Header("token") String token,
-            @Body RCMFlex rcm
-    );
+    Call<RespostaRCMInserir> inserirRCM(@Header("token") String token,
+                                        @Header("Cookie") String cookie,
+                                        @Body RCMFlex rcm);
 
 }

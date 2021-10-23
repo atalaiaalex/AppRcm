@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -16,19 +16,13 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 
-import br.com.supermercadoatalaia.apprcm.config.RetrofitAtalaiaConfig;
-import br.com.supermercadoatalaia.apprcm.config.RetrofitFlexConfig;
+import br.com.supermercadoatalaia.apprcm.controller.LoginController;
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
-import br.com.supermercadoatalaia.apprcm.domain.model.AutenticarSessao;
-import br.com.supermercadoatalaia.apprcm.domain.model.RespostaAutenticacao;
-import br.com.supermercadoatalaia.apprcm.domain.model.RespostaRCMInserir;
 import br.com.supermercadoatalaia.apprcm.domain.model.UserLogin;
 import br.com.supermercadoatalaia.apprcm.domain.model.Usuario;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -63,8 +57,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private View.OnClickListener btnLogin_Click() {
         return v -> {
-            ApiConsumer apiConsumer = new ApiConsumer();
-
             final String username = txtUser.getText().toString();
             final String password = txtPassword.getText().toString();
 
@@ -82,52 +74,23 @@ public class LoginActivity extends AppCompatActivity {
 
             UserLogin user = new UserLogin(username, password);
 
-            Call<Usuario> call = new RetrofitAtalaiaConfig().getLoginService().login(user);
+            try {
+                Usuario usuario = new LoginController(getApplicationContext()).login(user);
 
-            call.enqueue(new Callback<Usuario>() {
-                @Override
-                public void onResponse(Call<Usuario> call, Response<Usuario> response) {
+                Toast.makeText(
+                        getApplicationContext(),
+                        "Bem vindo " + usuario.getNome(),
+                        Toast.LENGTH_LONG
+                ).show();
 
-                    Usuario user = response.body();
-                    user.setPassword(password);
-
-                    Call<RespostaAutenticacao> callFlex = new RetrofitFlexConfig()
-                            .getLoginService().login(
-                                    new AutenticarSessao("100000", "272108")
-                            );
-
-                    Log.i("LoginFlexService", "Iniciando Login");
-
-                    callFlex.enqueue(new Callback<RespostaAutenticacao>() {
-                        @Override
-                        public void onResponse(Call<RespostaAutenticacao> call,
-                                               Response<RespostaAutenticacao> response) {
-
-                            Log.i("LoginFlexService", "Logado, instanciando resposta");
-
-                            RespostaAutenticacao respostaAutenticacao = response.body();
-                            String token = respostaAutenticacao.getResponse().getToken();
-
-                            Log.i("LoginFlexService", "Token obtido \n\t\t" + token);
-
-                            SharedPrefManager.getInstance(getApplicationContext())
-                                    .userLogin(user, token);
-
-                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                        }
-
-                        @Override
-                        public void onFailure(Call<RespostaAutenticacao> call, Throwable t) {
-                            Log.e("LoginFlexService   ", "Erro ao efetuar login :: " + t.getMessage());
-                        }
-                    });
-                }
-
-                @Override
-                public void onFailure(Call<Usuario> call, Throwable t) {
-                    Log.e("LoginService   ", "Erro ao efetuar login :: " + t.getMessage());
-                }
-            });
+                startActivity(new Intent(this, MainActivity.class));
+            }catch (RegistroNotFoundException e) {
+                Toast.makeText(
+                        getApplicationContext(),
+                        "Erro ao logar" + e.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+            }
         };
     }
 

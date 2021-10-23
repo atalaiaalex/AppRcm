@@ -43,8 +43,9 @@ public class ColetaController {
         return coletaRepository.salvar(coleta);
     }
 
-    public void salvarColetaFlex(Coleta coleta, LancamentoColeta item) {
+    public void salvarColetaFlex(Coleta coleta, LancamentoColeta item) throws IOException, ParseException {
         coletaRepository.salvarRCMFlex(coleta, item);
+        coletaRepository.atualizar(coleta);
     }
 
     public LancamentoColeta salvarItemColeta(Coleta coleta, LancamentoColeta item)
