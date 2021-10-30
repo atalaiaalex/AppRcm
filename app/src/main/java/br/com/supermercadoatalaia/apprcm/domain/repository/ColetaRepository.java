@@ -1,6 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.domain.repository;
 
 import android.content.Context;
+import android.os.StrictMode;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.JsonWriter;
@@ -17,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import br.com.supermercadoatalaia.apprcm.config.RetrofitAtalaiaConfig;
 import br.com.supermercadoatalaia.apprcm.config.RetrofitFlexConfig;
 import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
@@ -27,6 +29,9 @@ import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 import br.com.supermercadoatalaia.apprcm.domain.model.RCMFlex;
 import br.com.supermercadoatalaia.apprcm.domain.model.RCMProduto;
 import br.com.supermercadoatalaia.apprcm.domain.model.RespostaRCMInserir;
+import br.com.supermercadoatalaia.apprcm.domain.service.ColetaService;
+import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
+import br.com.supermercadoatalaia.apprcm.exception.RequestFailureException;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -36,121 +41,123 @@ public class ColetaRepository {
     private static final String FORMATO_DATA_HORA = "yyyy-MM-dd'T'HH:mm:ss.SSSSS";
     private static final String FORMATO_DATA = "yyyy-MM-dd";
 
-    private final ApiConsumer apiConsumer;
+    private final ColetaService service;
     private final Context context;
 
     public ColetaRepository(Context context) {
-        apiConsumer = new ApiConsumer();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        this.service = new RetrofitAtalaiaConfig().getColetaService();
         this.context = context;
     }
 
-    public Coleta buscar(Long id) throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("GET", urlColetaId(id), context);
-        apiConsumer.addCabecalho("Accept", "application/json");
+    public Coleta buscar(Long id) throws RegistroNotFoundException {
+        Call<Coleta> call = service.buscarColeta(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                id
+        );
 
-        Coleta coleta;
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            coleta = instanciarColeta(jsonReader, true);
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Coleta> coleta = null;
+        try {
+            coleta = call.execute();
+        } catch (IOException e) {
+            throw new RegistroNotFoundException("Erro ao buscar coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coleta.isSuccessful()) {
+            return coleta.body();
+        }
 
-        return coleta;
+        throw new RegistroNotFoundException("Coleta não encontrado");
     }
 
     public List<Coleta> listarPorFornecedor(Long fornecedorId)
-            throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("GET", urlColetaFornecedorId(fornecedorId), context);
-        apiConsumer.addCabecalho("Accept", "application/json");
+            throws RegistroNotFoundException {
 
-        List<Coleta> coletas;
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+        Call<List<Coleta>> call = service.listarColetasPorFornecedor(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                fornecedorId
+        );
 
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            coletas = instanciarListaColeta(apiConsumer.getJsonReader());
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<List<Coleta>> coletas = null;
+        try {
+            coletas = call.execute();
+        } catch (IOException e) {
+            throw new RegistroNotFoundException("Erro ao buscar coletas", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coletas.isSuccessful()) {
+            return coletas.body();
+        }
 
-        return coletas;
+        throw new RegistroNotFoundException("Coletas do fornecedor não encontrado");
     }
 
     public List<Coleta> listarPorNf(Long numeroNotaFiscal)
-            throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao("GET", urlColetaNumeroNotaFiscal(numeroNotaFiscal), context);
-        apiConsumer.addCabecalho("Accept", "application/json");
+            throws RegistroNotFoundException {
 
-        List<Coleta> coletas;
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
+        Call<List<Coleta>> call = service.listarColetasPorNotaFiscal(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                numeroNotaFiscal
+        );
 
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            coletas = instanciarListaColeta(apiConsumer.getJsonReader());
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<List<Coleta>> coletas = null;
+        try {
+            coletas = call.execute();
+        } catch (IOException e) {
+            throw new RegistroNotFoundException("Erro ao buscar coletas", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coletas.isSuccessful()) {
+            return coletas.body();
+        }
 
-        return coletas;
+        throw new RegistroNotFoundException("Coletas da NF não encontrado");
     }
 
     public Coleta buscar(Long fornecedorId, Long numeroNotaFiscal)
-            throws ApiException, ParseException, IOException {
-        apiConsumer.iniciarConexao(
-                "GET",
-                urlColetaFornecedorIdNumeroNotaFiscal(fornecedorId, numeroNotaFiscal),
-                context
+            throws RegistroNotFoundException {
+
+        Call<Coleta> call = service.listarColetasPorFornecedorENotaFiscal(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                fornecedorId,
+                numeroNotaFiscal
         );
-        apiConsumer.addCabecalho("Accept", "application/json");
 
-        Coleta coleta;
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            coleta = instanciarColeta(jsonReader, true);
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Coleta> coleta = null;
+        try {
+            coleta = call.execute();
+        } catch (IOException e) {
+            throw new RegistroNotFoundException("Erro ao buscar coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coleta.isSuccessful()) {
+            return coleta.body();
+        }
 
-        return coleta;
-
+        throw new RegistroNotFoundException("Coleta do fornecedor e NF não encontrado");
     }
 
-    public Coleta salvar(Coleta coleta) throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao(
-                "POST",
-                new URL(ApiConsumer.REST_COLETAS),
-                context
+    public Coleta salvar(Coleta coleta) throws RequestFailureException {
+
+        Call<Coleta> call = service.salvarColeta(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                coleta
         );
-        apiConsumer.addCabecalho("Content-Type", "application/json");
-        apiConsumer.addCabecalho("Accept", "application/json");
 
-        setColetaToApi(apiConsumer.getJsonWriter(), coleta);
-
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            coleta = instanciarColeta(jsonReader, true);
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Coleta> coletaSalva = null;
+        try {
+            coletaSalva = call.execute();
+        } catch (IOException e) {
+            throw new RequestFailureException("Erro ao salvar coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coletaSalva.isSuccessful()) {
+            return coletaSalva.body();
+        }
 
-        return coleta;
+        throw new RequestFailureException("Não foi possível salvar a coleta");
     }
 
     public void salvarRCMFlex(Coleta coleta, LancamentoColeta item) {
@@ -167,10 +174,7 @@ public class ColetaRepository {
             @Override
             public void onResponse(Call<RespostaRCMInserir> call, Response<RespostaRCMInserir> response) {
                 RespostaRCMInserir respostaRCMInserir = response.body();
-                Log.i(
-                        "RCMService",
-                        "Sucesso ao inserir coletagem" + respostaRCMInserir.getResponse().getMessagesToString()
-                );
+                Log.i("Transação RCM", respostaRCMInserir.getResponse().getTransacao());
             }
 
             @Override
