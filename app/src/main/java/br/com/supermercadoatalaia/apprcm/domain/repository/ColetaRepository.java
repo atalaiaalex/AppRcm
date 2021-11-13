@@ -233,101 +233,93 @@ public class ColetaRepository {
         );
     }
 
-    public Coleta atualizar(Coleta coleta) throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao(
-                "PUT",
-                urlColetaId(coleta.getId()),
-                context
+    public Coleta atualizar(Coleta coleta) throws RequestFailureException {
+
+        Call<Coleta> call = service.atualizarColeta(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                coleta.getId(),
+                coleta
         );
 
-        apiConsumer.addCabecalho("Content-Type", "application/json");
-        apiConsumer.addCabecalho("Accept", "application/json");
-
-        setColetaToApi(apiConsumer.getJsonWriter(), coleta);
-
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            coleta = instanciarColeta(jsonReader, true);
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Coleta> coletaAtualizada = null;
+        try {
+            coletaAtualizada = call.execute();
+        } catch (IOException e) {
+            throw new RequestFailureException("Erro ao atualizar coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coletaAtualizada.isSuccessful()) {
+            return coletaAtualizada.body();
+        }
 
-        return coleta;
+        throw new RequestFailureException("Não foi possível atualizar a coleta");
     }
 
-    public HttpResposta deletar(Coleta coleta) throws ApiException, IOException {
-        apiConsumer.iniciarConexao(
-                "DELETE",
-                urlColetaId(coleta.getId()),
-                context
+    public HttpResposta deletar(Coleta coleta) throws RequestFailureException {
+        Call<Coleta> call = service.deletarColeta(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                coleta.getId()
         );
 
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() > 300) {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Coleta> coletaDeletada = null;
+        try {
+            coletaDeletada = call.execute();
+        } catch (IOException e) {
+            throw new RequestFailureException("Erro ao deletar coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coletaDeletada.isSuccessful()) {
+            return HttpResposta.SEM_CONTEUDO;
+        }
 
-        return httpResposta;
+        throw new RequestFailureException("Não foi possível deletar a coleta");
     }
 
     public LancamentoColeta salvarItem(Coleta coleta, LancamentoColeta item)
-            throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao(
-                "POST",
-                urlColetaLancar(coleta.getId()),
-                context
+            throws RequestFailureException {
+
+        Call<LancamentoColeta> call = service.salvarItem(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                coleta.getId(),
+                item
         );
-        apiConsumer.addCabecalho("Content-Type", "application/json");
-        apiConsumer.addCabecalho("Accept", "application/json");
 
-        setLancamentoColetaToApi(apiConsumer.getJsonWriter(), item, true);
-
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            item = instanciarLancamentoColeta(jsonReader);
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<LancamentoColeta> itemSalvo = null;
+        try {
+            itemSalvo = call.execute();
+        } catch (IOException e) {
+            throw new RequestFailureException("Erro ao salvar item coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(itemSalvo.isSuccessful()) {
+            return itemSalvo.body();
+        }
 
-        return item;
+        throw new RequestFailureException("Não foi possível salvar o item da coleta");
     }
 
     public LancamentoColeta atualizarItem(Coleta coleta, LancamentoColeta item)
-            throws ApiException, IOException, ParseException {
-        apiConsumer.iniciarConexao(
-                "PUT",
-                urlColetaLancarId(coleta.getId(), item.getId()),
-                context
+            throws RequestFailureException {
+
+        Call<Coleta> call = service.atualizarItem(
+                SharedPrefManager.getInstance(context).getAuthorization(),
+                coleta.getId(),
+                item.getId(),
+                item
         );
-        apiConsumer.addCabecalho("Content-Type", "application/json");
-        apiConsumer.addCabecalho("Accept", "application/json");
 
-        setLancamentoColetaToApi(apiConsumer.getJsonWriter(), item, true);
-
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() >= 200 && httpResposta.getCode() < 300) {
-            item = instanciarLancamentoColeta(jsonReader);
-        } else {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Coleta> coletaAtualizada = null;
+        try {
+            coletaAtualizada = call.execute();
+        } catch (IOException e) {
+            throw new RequestFailureException("Erro ao atualizar coleta", e);
         }
 
-        apiConsumer.fecharConexao();
+        if(coletaAtualizada.isSuccessful()) {
+            return coletaAtualizada.body();
+        }
 
-        return item;
+        throw new RequestFailureException("Não foi possível atualizar a coleta");
     }
 
     public HttpResposta deletarItem(Coleta coleta, LancamentoColeta item)
