@@ -1,4 +1,4 @@
-package br.com.supermercadoatalaia.apprcm.domain.model;
+package br.com.supermercadoatalaia.apprcm.dto.request;
 
 import java.io.Serializable;
 
@@ -13,8 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AutenticarSessao implements Serializable {
+public class UserLogin implements Serializable {
 
-    private String usuario;
-    private String senha;
+    private String username;
+    private String password;
 }

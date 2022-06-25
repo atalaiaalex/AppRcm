@@ -2,15 +2,14 @@ package br.com.supermercadoatalaia.apprcm.controller;
 
 import android.content.Context;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
-import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
-import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 import br.com.supermercadoatalaia.apprcm.domain.repository.ColetaRepository;
+import br.com.supermercadoatalaia.apprcm.dto.help.MessageResponse;
+import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
+import br.com.supermercadoatalaia.apprcm.exception.RequestFailureException;
 
 public class ColetaController {
 
@@ -20,54 +19,56 @@ public class ColetaController {
         coletaRepository = new ColetaRepository(context);
     }
 
-    public Coleta buscarPorId(Long id) throws ApiException, IOException, ParseException {
+    public Coleta buscarPorId(Long id) throws RegistroNotFoundException {
         return coletaRepository.buscar(id);
     }
 
     public Coleta buscarPorFornecedorNotaFiscal(Long fornecedorId, Long numeroNotaFiscal)
-            throws ApiException, IOException, ParseException {
+            throws RegistroNotFoundException {
+
         return coletaRepository.buscar(fornecedorId, numeroNotaFiscal);
     }
 
-    public List<Coleta> listarPorFornecedor(Long fornecedorId)
-            throws ApiException, IOException, ParseException {
+    public List<Coleta> listarPorFornecedor(Long fornecedorId) throws RegistroNotFoundException {
         return coletaRepository.listarPorFornecedor(fornecedorId);
     }
 
-    public List<Coleta> listarPorNotaFiscal(Long numeroNotaFiscal)
-            throws ApiException, IOException, ParseException {
+    public List<Coleta> listarPorNotaFiscal(Long numeroNotaFiscal) throws RegistroNotFoundException {
         return coletaRepository.listarPorNf(numeroNotaFiscal);
     }
 
-    public Coleta salvarColeta(Coleta coleta) throws ApiException, IOException, ParseException {
+    public MessageResponse salvarColeta(Coleta coleta) throws RequestFailureException {
         return coletaRepository.salvar(coleta);
     }
 
-    public void salvarColetaFlex(Coleta coleta, LancamentoColeta item) throws IOException, ParseException {
+    public MessageResponse salvarColetaFlex(Coleta coleta, LancamentoColeta item)
+            throws RequestFailureException {
+
         coletaRepository.salvarRCMFlex(coleta, item);
-        coletaRepository.atualizar(coleta);
-    }
-
-    public LancamentoColeta salvarItemColeta(Coleta coleta, LancamentoColeta item)
-            throws ApiException, IOException, ParseException {
-        return coletaRepository.salvarItem(coleta, item);
-    }
-
-    public Coleta atualizarColeta(Coleta coleta) throws ApiException, IOException, ParseException {
         return coletaRepository.atualizar(coleta);
     }
 
-    public LancamentoColeta atualizarItemColeta(Coleta coleta, LancamentoColeta item)
-            throws ApiException, IOException, ParseException {
+    public MessageResponse salvarItemColeta(Coleta coleta, LancamentoColeta item)
+            throws RequestFailureException {
+
+        return coletaRepository.salvarItem(coleta, item);
+    }
+
+    public MessageResponse atualizarColeta(Coleta coleta) throws RequestFailureException {
+        return coletaRepository.atualizar(coleta);
+    }
+
+    public MessageResponse atualizarItemColeta(Coleta coleta, LancamentoColeta item)
+            throws RequestFailureException {
+
         return coletaRepository.atualizarItem(coleta, item);
     }
 
-    public HttpResposta deletarColeta(Coleta coleta) throws ApiException, IOException {
-        return coletaRepository.deletar(coleta);
+    public void deletarColeta(Coleta coleta) throws RequestFailureException {
+        coletaRepository.deletar(coleta);
     }
 
-    public HttpResposta deletarItemColeta(Coleta coleta, LancamentoColeta item)
-            throws ApiException, IOException {
-        return coletaRepository.deletarItem(coleta, item);
+    public void deletarItemColeta(Coleta coleta, LancamentoColeta item) throws RequestFailureException {
+        coletaRepository.deletarItem(coleta, item);
     }
 }

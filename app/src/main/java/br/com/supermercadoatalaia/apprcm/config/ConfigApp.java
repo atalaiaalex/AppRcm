@@ -1,6 +1,7 @@
-package br.com.supermercadoatalaia.apprcm.core;
+package br.com.supermercadoatalaia.apprcm.config;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,12 +11,12 @@ import java.nio.charset.Charset;
 
 public class ConfigApp {
 
-    private String pasta;
+    public static String SERVER;
+    public static String SERVER_HOST = "http://192.168.2.199:1234";
 
+    private String pasta;
     public static final String PASTA_CONFIG = "config";
     private static final String NOME_CONFIG = "app.conf";
-
-    public static String SERVER;
 
     public ConfigApp(String pasta){
         this.pasta = pasta;
@@ -45,15 +46,15 @@ public class ConfigApp {
     }
 
     public void salvarTxt (String dado) throws IOException {
-
+        new File(pasta + "/" + NOME_CONFIG).deleteOnExit();
         FileWriter arquivo = new FileWriter(pasta + "/" + NOME_CONFIG);
         PrintWriter outputStream;
 
-        outputStream = new PrintWriter(arquivo);
         SERVER = dado;
+
+        outputStream = new PrintWriter(arquivo);
         outputStream.println(dado);
         arquivo.flush();
         arquivo.close();
     }
-
 }

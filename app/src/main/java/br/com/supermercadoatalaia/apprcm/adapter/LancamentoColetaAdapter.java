@@ -8,7 +8,6 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.List;
-import java.util.Locale;
 
 import br.com.supermercadoatalaia.apprcm.R;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;

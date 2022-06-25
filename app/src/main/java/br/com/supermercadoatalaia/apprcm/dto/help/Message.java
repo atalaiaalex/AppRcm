@@ -1,4 +1,4 @@
-package br.com.supermercadoatalaia.apprcm.domain.model;
+package br.com.supermercadoatalaia.apprcm.dto.help;
 
 import java.io.Serializable;
 
@@ -13,8 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OcorrenciaFornecedor implements Serializable {
+public class Message implements Serializable {
 
-    private String mensagem;
-    private Long usuarioId;
+    private String message;
 }

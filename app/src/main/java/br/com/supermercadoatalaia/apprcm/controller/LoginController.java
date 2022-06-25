@@ -9,12 +9,14 @@ import java.io.IOException;
 import br.com.supermercadoatalaia.apprcm.config.RetrofitAtalaiaConfig;
 import br.com.supermercadoatalaia.apprcm.config.RetrofitFlexConfig;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
-import br.com.supermercadoatalaia.apprcm.domain.model.AutenticacaoResponse;
-import br.com.supermercadoatalaia.apprcm.domain.model.AutenticarSessao;
-import br.com.supermercadoatalaia.apprcm.domain.model.UserLogin;
 import br.com.supermercadoatalaia.apprcm.domain.model.Usuario;
 import br.com.supermercadoatalaia.apprcm.domain.service.LoginFlexService;
 import br.com.supermercadoatalaia.apprcm.domain.service.LoginService;
+import br.com.supermercadoatalaia.apprcm.domain.service.UsuarioService;
+import br.com.supermercadoatalaia.apprcm.dto.request.AutenticarSessao;
+import br.com.supermercadoatalaia.apprcm.dto.request.UserLogin;
+import br.com.supermercadoatalaia.apprcm.dto.response.AutenticacaoResponse;
+import br.com.supermercadoatalaia.apprcm.dto.response.AuthenticationToken;
 import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -23,6 +25,7 @@ public class LoginController {
 
     private final LoginService service;
     private final LoginFlexService flexService;
+    private final UsuarioService usuarioService;
     private Context context;
 
     public LoginController(Context context) {
@@ -31,29 +34,49 @@ public class LoginController {
 
         this.service = new RetrofitAtalaiaConfig().getLoginService();
         this.flexService = new RetrofitFlexConfig().getLoginService();
+        this.usuarioService = new RetrofitAtalaiaConfig().getUsuarioService();
         this.context = context;
     }
 
-    public Usuario login(UserLogin user) throws RegistroNotFoundException {
-        Call<Usuario> call = service.login(user);
+    public void login(UserLogin user) throws RegistroNotFoundException {
+        Call<AuthenticationToken> call = service.login(user);
 
-        Response<Usuario> usuario = null;
+        Response<AuthenticationToken> usuario;
         try {
             usuario = call.execute();
         } catch (IOException e) {
-            throw new RegistroNotFoundException("Erro ao buscar usuario", e);
+            throw new RegistroNotFoundException("Usuário ou senha inválida", e);
         }
 
         if(usuario.isSuccessful()) {
-            Usuario usuarioResponse = usuario.body();
-            usuarioResponse.setPassword(user.getPassword());
+            AuthenticationToken auth = usuario.body();
 
-            logarFlex(usuarioResponse);
+            SharedPrefManager.getInstance(context).userLogin(auth);
 
-            return usuarioResponse;
+            this.setUsuario();
+        }else {
+            throw new RegistroNotFoundException("Usuário ou senha inválida");
+        }
+    }
+
+    private void setUsuario() throws RegistroNotFoundException {
+        Call<Usuario> call = usuarioService.buscarPorLogin(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
+                SharedPrefManager.getInstance(context).getUserNome()
+        );
+
+        Response<Usuario> usuario;
+        try {
+            usuario = call.execute();
+        } catch (IOException e) {
+            throw new RegistroNotFoundException("Erro ao obter dados do usuário", e);
         }
 
-        throw new RegistroNotFoundException("Usuario não encontrado");
+        if(usuario.isSuccessful()) {
+            SharedPrefManager.getInstance(context).setUsuario(usuario.body());
+        }else {
+            throw new RegistroNotFoundException("Erro ao obter dados do usuário");
+        }
     }
 
     private void logarFlex(Usuario usuario) throws RegistroNotFoundException {
@@ -72,7 +95,7 @@ public class LoginController {
         }
 
         if(usuarioFlex.isSuccessful()) {
-            SharedPrefManager.getInstance(context).userLogin(
+            SharedPrefManager.getInstance(context).userLoginFlex(
                     usuario,
                     usuarioFlex.body().getResponse().getToken(),
                     usuarioFlex.headers().get("Set-Cookie")
@@ -81,7 +104,9 @@ public class LoginController {
     }
 
     public void logout() {
-        Call<Void> call = service.logout(SharedPrefManager.getInstance(context).getAuthorization());
+        SharedPrefManager.getInstance(context).logout();
+
+        Call<Void> call = service.logout();
         Call<Void> callFlex = flexService.logout(
                 SharedPrefManager.getInstance(context).getTokenFlex(),
                 SharedPrefManager.getInstance(context).getCookieFlex()
@@ -92,8 +117,6 @@ public class LoginController {
             callFlex.execute();
         } catch (IOException e) {
             Log.e("Logout", e.getMessage());
-        } finally {
-            SharedPrefManager.getInstance(context).logout();
         }
     }
 }

@@ -2,11 +2,9 @@ package br.com.supermercadoatalaia.apprcm.controller;
 
 import android.content.Context;
 
-import java.io.IOException;
-
-import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
 import br.com.supermercadoatalaia.apprcm.domain.repository.ProdUnidadeRepository;
+import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
 
 public class ProdutoController {
     private final ProdUnidadeRepository prodUnidadeRepository;
@@ -15,11 +13,15 @@ public class ProdutoController {
         prodUnidadeRepository = new ProdUnidadeRepository(context);
     }
 
-    public ProdUnidade buscarPorId(Long id, String unidade) throws ApiException, IOException {
+    public ProdUnidade buscarPorIdUnidade(Long id, String unidade)
+            throws RegistroNotFoundException {
+
         return prodUnidadeRepository.buscar(id, unidade);
     }
 
-    public ProdUnidade buscarPorEan(String ean, String unidade) throws ApiException, IOException {
+    public ProdUnidade buscarPorEanUnidade(String ean, String unidade)
+            throws RegistroNotFoundException {
+
         return prodUnidadeRepository.buscar(ean, unidade);
     }
 }

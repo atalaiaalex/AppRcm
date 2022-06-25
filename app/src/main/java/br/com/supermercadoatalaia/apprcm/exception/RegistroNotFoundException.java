@@ -1,6 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.exception;
 
-public class RegistroNotFoundException extends RuntimeException {
+public class RegistroNotFoundException extends Exception {
 
     public RegistroNotFoundException(String msg) {
         super(msg);

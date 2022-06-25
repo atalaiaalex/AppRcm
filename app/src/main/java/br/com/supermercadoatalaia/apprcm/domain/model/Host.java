@@ -13,13 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Fornecedor implements Serializable {
+public class Host implements Serializable {
 
-    private Long id;
-    private String nome;
-    private String razaoSocial;
-    private String cnpjCpf;
-    private String situacao;
-    private Long vinculoCodigo;
-    private String status;
+    private String host;
 }

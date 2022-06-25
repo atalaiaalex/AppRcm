@@ -1,8 +1,6 @@
 package br.com.supermercadoatalaia.apprcm;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,15 +15,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
 
 import java.io.IOException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,33 +32,30 @@ import br.com.supermercadoatalaia.apprcm.adapter.LancamentoColetaAdapter;
 import br.com.supermercadoatalaia.apprcm.controller.ColetaController;
 import br.com.supermercadoatalaia.apprcm.controller.FornecedorController;
 import br.com.supermercadoatalaia.apprcm.controller.LoginController;
-import br.com.supermercadoatalaia.apprcm.controller.PedidoController;
+import br.com.supermercadoatalaia.apprcm.controller.PedidoCompraController;
 import br.com.supermercadoatalaia.apprcm.controller.ProdutoController;
-import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
-import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.Fornecedor;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 import br.com.supermercadoatalaia.apprcm.domain.model.OcorrenciaFornecedor;
-import br.com.supermercadoatalaia.apprcm.domain.model.Pedido;
+import br.com.supermercadoatalaia.apprcm.domain.model.PedidoCompra;
 import br.com.supermercadoatalaia.apprcm.domain.model.ProdUnidade;
+import br.com.supermercadoatalaia.apprcm.dto.help.MessageResponse;
+import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
+import br.com.supermercadoatalaia.apprcm.exception.RequestFailureException;
 import br.com.supermercadoatalaia.apprcm.util.MaskDateTextWatcher;
 
 public class MainActivity extends AppCompatActivity {
 
     private ColetaController coletaController;
     private FornecedorController fornecedorController;
-    private PedidoController pedidoController;
+    private PedidoCompraController pedidoCompraController;
     private ProdutoController produtoController;
-
-    public static final int REQUEST_LEITURA = 21;
-    public static final int REQUEST_CONSULTA = 22;
-    private static final int PERMISSAO_IO = 1;
 
     private Coleta coleta;
     private LancamentoColeta item;
-    private List<Pedido> pedidos;
+    private List<PedidoCompra> pedidoCompras;
     private Fornecedor fornecedor;
     private ProdUnidade produto;
     private Long numeroNotaFiscal;
@@ -108,18 +99,38 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listLancamentoColeta;
 
+    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                Intent data = result.getData();
+                if (result.getResultCode() == LeitorActivity.SUCESSO) {
+                    iniciarNovoItem();
+
+                    if (data != null) {
+                        if(btiScannerChave.isEnabled()) {
+                            edtChave.setText(data.getStringExtra(LeitorActivity.RETORNO_LEITURA));
+                        }else if(btiScannerEan.isEnabled()) {
+                            edtEan.setText(data.getStringExtra(LeitorActivity.RETORNO_LEITURA));
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(),
+                                "Nenhum Código de barra capturado!",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         coletaController = new ColetaController(getApplicationContext());
         fornecedorController = new FornecedorController(getApplicationContext());
-        pedidoController = new PedidoController(getApplicationContext());
+        pedidoCompraController = new PedidoCompraController(getApplicationContext());
         produtoController = new ProdutoController(getApplicationContext());
 
         initComponents();
-        initPermissoes();
-
         iniciarNovaColeta();
     }
 
@@ -139,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
         this.item = item;
     }
 
-    private void setPedidos(List<Pedido> pedidos) {
-        this.pedidos = pedidos;
+    private void setPedidos(List<PedidoCompra> pedidoCompras) {
+        this.pedidoCompras = pedidoCompras;
     }
 
     private void setFornecedor(Fornecedor fornecedor) {
@@ -336,15 +347,19 @@ public class MainActivity extends AppCompatActivity {
         ajustaListLancamentoColeta();
     }
 
-    private void preencherCampos() throws ApiException, IOException {
+    private void preencherCampos() throws RegistroNotFoundException {
         setFornecedor(new Fornecedor());
-        setFornecedor(fornecedorController.buscarPorId(coleta.getFornecedorId()));
-        setPedidos(new ArrayList<Pedido>());
-        setPedidos(pedidoController.buscarPorFornecedorNotaFiscal(fornecedor.getId() ,coleta.getNumeroNotaFiscal()));
+        try {
+            setFornecedor(fornecedorController.buscarPorId(coleta.getFornecedorId()));
+        } catch (RegistroNotFoundException e) {
+            e.printStackTrace();
+        }
+        setPedidos(new ArrayList<>());
+        setPedidos(pedidoCompraController.buscarPorFornecedorNotaFiscal(fornecedor.getId() ,coleta.getNumeroNotaFiscal()));
 
         edtCnpjCfp.setText(fornecedor.getCnpjCpf());
         edtNumeroNotaFiscal.setText(
-                String.valueOf(pedidos.get(0).getNotaFiscalBaixada())
+                String.valueOf(pedidoCompras.get(0).getNotaFiscalBaixada())
         );
         txvRazaoSocial.setText(fornecedor.getRazaoSocial());
         txvDataMvto.setText(String.format(
@@ -353,9 +368,9 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         txvPedidoId.setText(
-                setPedidoIds(pedidos).toString()
+                setPedidoIds(pedidoCompras).toString()
         );
-        txvUnidade.setText("Unid." + pedidos.get(0).getUnidade());
+        txvUnidade.setText("Unid." + pedidoCompras.get(0).getUnidade());
 
         edtChave.setEnabled(false);
         edtCnpjCfp.setEnabled(false);
@@ -418,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setItemParaSalvar() throws ApiException, IOException {
+    private void setItemParaSalvar() throws RegistroNotFoundException, IOException {
         setQntsValidadeItem();
 
         setItem(
@@ -437,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setItemParaAlterar() throws ApiException, IOException {
+    private void setItemParaAlterar() throws RegistroNotFoundException, IOException {
         setQntsValidadeItem();
 
         setItem(
@@ -456,7 +471,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setQntsValidadeItem() throws ApiException, IOException {
+    private void setQntsValidadeItem() throws RegistroNotFoundException, IOException {
         if(edtQntNaEmb.getText().toString().length() == 0) {
             qntNaEmb = 0D;
         } else {
@@ -488,13 +503,13 @@ public class MainActivity extends AppCompatActivity {
         buscarProdutoPorEan();
     }
 
-    private void buscarProdutoPorEan() throws ApiException, IOException {
+    private void buscarProdutoPorEan() throws RegistroNotFoundException {
         String ean = edtEan.getText().toString();
         edtEan.setText(ean13(ean));
 
         if(!produto.getEan().equals(edtEan.getText().toString())) {
             setProduto(new ProdUnidade());
-            setProduto(produtoController.buscarPorEan(ean, unidade));
+            setProduto(produtoController.buscarPorEanUnidade(ean, unidade));
         }
     }
 
@@ -511,17 +526,17 @@ public class MainActivity extends AppCompatActivity {
         return ean;
     }
 
-    private Set<Long> setPedidoIds(List<Pedido> pedidos) {
+    private Set<Long> setPedidoIds(List<PedidoCompra> pedidoCompras) {
         Set<Long> ids = new HashSet<>();
 
-        for(Pedido p : pedidos) {
+        for(PedidoCompra p : pedidoCompras) {
             ids.add(p.getId());
         }
 
         return ids;
     }
 
-    private void setColetaParaSalvar() throws ApiException, IOException, NumberFormatException, ParseException {
+    private void setColetaParaSalvar() throws RegistroNotFoundException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -529,8 +544,8 @@ public class MainActivity extends AppCompatActivity {
                         null,
                         fornecedor.getId(),
                         numeroNotaFiscal,
-                        pedidos.get(0).getSerie(),
-                        setPedidoIds(pedidos),
+                        pedidoCompras.get(0).getSerie(),
+                        setPedidoIds(pedidoCompras),
                         new ArrayList<LancamentoColeta>(),
                         null,
                         null,
@@ -539,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setColetaParaAlterar() throws ApiException, IOException, NumberFormatException, ParseException {
+    private void setColetaParaAlterar() throws RegistroNotFoundException {
         setFornecedorPedidoUnidade();
 
         setColeta(
@@ -547,8 +562,8 @@ public class MainActivity extends AppCompatActivity {
                         coleta.getId(),
                         fornecedor.getId(),
                         numeroNotaFiscal,
-                        pedidos.get(0).getSerie(),
-                        setPedidoIds(pedidos),
+                        pedidoCompras.get(0).getSerie(),
+                        setPedidoIds(pedidoCompras),
                         coleta.getItens(),
                         coleta.getDataMovimento(),
                         coleta.getDataAlteracao(),
@@ -557,8 +572,7 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void setFornecedorPedidoUnidade()
-            throws ApiException, IOException, ParseException {
+    private void setFornecedorPedidoUnidade() throws RegistroNotFoundException {
         String cnpjCfp = edtCnpjCfp.getText().toString();
 
         try {
@@ -572,21 +586,25 @@ public class MainActivity extends AppCompatActivity {
 
         setFornecedor(new Fornecedor());
 
-        if(cnpjCfp.length() >= 14) {
-            setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
-        } else {
-            setFornecedor(fornecedorController.buscarPorId(Long.valueOf(cnpjCfp)));
+        try {
+            if(cnpjCfp.length() >= 14) {
+                setFornecedor(fornecedorController.buscarPorCnpjCpf(cnpjCfp));
+            } else {
+                setFornecedor(fornecedorController.buscarPorId(Long.valueOf(cnpjCfp)));
+            }
+        } catch (RegistroNotFoundException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
-        setPedidos(new ArrayList<Pedido>());
+        setPedidos(new ArrayList<>());
         setPedidos(
-            pedidoController.buscarPorFornecedorNotaFiscal(
+            pedidoCompraController.buscarPorFornecedorNotaFiscal(
                 fornecedor.getId(),
                 numeroNotaFiscal
             )
         );
 
-        setUnidade(pedidos.get(0).getUnidade());
+        setUnidade(pedidoCompras.get(0).getUnidade());
 
         try {
             List<OcorrenciaFornecedor> ocorrencias =
@@ -601,10 +619,8 @@ public class MainActivity extends AppCompatActivity {
 
                 dialogo.show(getSupportFragmentManager(), "DialogoOcorrencia");
             }
-        } catch(ApiException e) {
+        } catch(RegistroNotFoundException e) {
             e.printStackTrace();// coloquei para ver que erro dá aqui nas ocorrencias
-        } catch(Exception ea) {
-            ea.printStackTrace();
         }
     }
 
@@ -616,10 +632,8 @@ public class MainActivity extends AppCompatActivity {
                 coletaController.deletarColeta(coleta);
                 mudarBotoesNovaColeta();
                 Toast.makeText(this, "Deletado!!!", Toast.LENGTH_LONG).show();
-            } catch (ApiException apie) {
+            } catch (RequestFailureException apie) {
                 Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-            } catch (IOException e) {
-                Toast.makeText(this, "Erro ao deletar coleta!!!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
 
@@ -634,12 +648,13 @@ public class MainActivity extends AppCompatActivity {
         } else {
             try {
                 setColetaParaAlterar();
-                coleta = coletaController.atualizarColeta(coleta);
+                MessageResponse mr = coletaController.atualizarColeta(coleta);
+                coleta.setId(mr.getId());
                 mudarBotoesIniciarColeta();
                 preencherCampos();
-            } catch (ApiException apie) {
+            } catch (RegistroNotFoundException apie) {
                 Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-            } catch (IOException | ParseException e) {
+            } catch (RequestFailureException e) {
                 Toast.makeText(this, "Erro ao alterar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
@@ -648,14 +663,15 @@ public class MainActivity extends AppCompatActivity {
     private void salvarColeta() {
         try {
             setColetaParaSalvar();
-            coleta = coletaController.salvarColeta(coleta);
+            MessageResponse mr = coletaController.salvarColeta(coleta);
+            coleta.setId(mr.getId());
             preencherCampos();
             mudarBotoesIniciarColeta();
             iniciarNovoItem();
             //edtEan.requestFocus(); //atrapalha em alguns momentos
-        } catch (ApiException apie) {
+        } catch (RegistroNotFoundException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException | ParseException e) {
+        } catch (RequestFailureException e) {
             Toast.makeText(this, "Erro ao salvar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -663,7 +679,8 @@ public class MainActivity extends AppCompatActivity {
     private void salvarItemColeta() {
         try {
             setItemParaSalvar();
-            item = coletaController.salvarItemColeta(coleta, item);
+            MessageResponse mr = coletaController.salvarItemColeta(coleta, item);
+            item.setId(mr.getId());
             coleta.getItens().add(item);
             if(coleta.getItens().size() == 1) {
                 Log.i("Main salvar coleta", "tem 1 item na lista");
@@ -671,9 +688,9 @@ public class MainActivity extends AppCompatActivity {
             }
             mudarBotoesIniciarItem();
             iniciarNovoItem();
-        } catch (ApiException apie) {
+        } catch (RegistroNotFoundException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException | ParseException e) {
+        } catch (RequestFailureException | IOException e) {
             Toast.makeText(this, "Erro ao salvar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -686,13 +703,14 @@ public class MainActivity extends AppCompatActivity {
             try {
                 setItemParaAlterar();
                 int indexItem = coleta.getItens().indexOf(item);
-                item = coletaController.atualizarItemColeta(coleta, item);
+                MessageResponse mr = coletaController.atualizarItemColeta(coleta, item);
+                item.setId(mr.getId());
                 coleta.getItens().set(indexItem, item);
                 mudarBotoesIniciarItem();
                 iniciarNovoItem();
-            } catch (ApiException apie) {
+            } catch (RegistroNotFoundException apie) {
                 Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-            } catch (IOException | ParseException e) {
+            } catch (IOException | RequestFailureException e) {
                 Toast.makeText(this, "Erro ao alterar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
@@ -712,10 +730,8 @@ public class MainActivity extends AppCompatActivity {
                 iniciarNovaColeta();
                 Toast.makeText(this, "Coleta deletada por falta de itens!", Toast.LENGTH_LONG).show();
             }
-        } catch (ApiException apie) {
+        } catch (RequestFailureException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Erro ao deletar item!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -725,49 +741,16 @@ public class MainActivity extends AppCompatActivity {
             coleta = coletaController.buscarPorFornecedorNotaFiscal(fornecedor.getId(), numeroNotaFiscal);
             preencherCampos();
             mudarBotoesIniciarColeta();
-        } catch (ApiException apie) {
+        } catch (RegistroNotFoundException apie) {
             Toast.makeText(this, apie.getMessage(), Toast.LENGTH_LONG).show();
         } catch (NumberFormatException nfe) {
             Toast.makeText(this, "Verifique o cnpj e núm. da NF digitado!\n"+nfe.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException | ParseException e) {
-            Toast.makeText(this, "Erro ao buscar coleta!!!\n"+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private void abrirLeitura() {
-        IntentIntegrator integrator = new IntentIntegrator(this);
-        integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-        integrator.setCaptureActivity(ScannerActivity.class);
-        if(edtChave.getText().length() == 0) {
-            integrator.setPrompt("Focalize a Chave da DANFE.");
-        }else {
-            integrator.setPrompt("Focalize o EAN do produto.");
-        }
-        integrator.initiateScan();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if(result != null) {
-            iniciarNovoItem();
-
-            if(result.getContents() == null) {
-                Toast.makeText(
-                        getApplicationContext(),
-                        "Nenhum EAN capturado!",
-                        Toast.LENGTH_LONG
-                ).show();
-            } else {
-                if(btiScannerChave.isEnabled()) { //Posso usar até o enable do botão
-                    edtChave.setText(result.getContents());
-                }else if(btiScannerEan.isEnabled()) {
-                    edtEan.setText(result.getContents());
-                }
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
+        Intent intent = new Intent(getApplicationContext(), LeitorActivity.class);
+        activityResultLauncher.launch(intent);
     }
 
     private void initComponents() {
@@ -807,19 +790,22 @@ public class MainActivity extends AppCompatActivity {
 
         listLancamentoColeta = findViewById(R.id.listLancamentoColeta);
 
-        btnBuscarColeta.setOnClickListener(btnBuscarColetaPorFornecedorNotaFiscal_Click());
-        btnAlterarColeta.setOnClickListener(btnAlterarColeta_Click());
-        btnExcluirColeta.setOnClickListener(btnExcluirColeta_Click());
-        btnAlterarItem.setOnClickListener(btnAlterarItemColeta_Click());
-        btnExcluirItem.setOnClickListener(btnExcluirItemColeta_Click());
-        btnLimpar.setOnClickListener(btnLimpar_Click());
-        btnLancar.setOnClickListener(btnSalvarItemColeta_Click());
-        btnIniciarColeta.setOnClickListener(btnSalvarColeta_Click());
-        btnNovaColeta.setOnClickListener(btnNovaColeta_Click());
-        btnLogout.setOnClickListener(btnLogout_Click());
+        btnBuscarColeta.setOnClickListener(v -> buscarColetaPorFornecedorNotaFiscal());
+        btnAlterarColeta.setOnClickListener(v -> atualizarColeta());
+        btnExcluirColeta.setOnClickListener(v -> deletarColeta());
+        btnAlterarItem.setOnClickListener(v -> atualizarItemColeta());
+        btnExcluirItem.setOnClickListener(v -> deletarItemColeta());
+        btnLimpar.setOnClickListener(v -> {
+            mudarBotoesIniciarItem();
+            iniciarNovoItem();
+        });
+        btnLancar.setOnClickListener(v -> salvarItemColeta());
+        btnIniciarColeta.setOnClickListener(v -> salvarColeta());
+        btnNovaColeta.setOnClickListener(v -> iniciarNovaColeta());
+        btnLogout.setOnClickListener(v -> logout());
 
-        btiScannerEan.setOnClickListener(btiScanner_Click());
-        btiScannerChave.setOnClickListener(btiScanner_Click());
+        btiScannerEan.setOnClickListener(v -> abrirLeitura());
+        btiScannerChave.setOnClickListener(v -> abrirLeitura());
 
         edtEan.setOnFocusChangeListener(edtEan_FocusChange());
         edtValidade.addTextChangedListener(edtValidade_TextChanged());
@@ -896,47 +882,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private DatePicker.OnDateChangedListener dpkValidade_DateChanged() {
-        return new DatePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
-                edtValidade.setText(String.format("%1$td/%1$tm/%1$tY", vencimento));
-                edtValidade.setSelection(edtValidade.length());
-            }
+        return (view, year, monthOfYear, dayOfMonth) -> {
+            vencimento.set(dpkValidade.getYear(), dpkValidade.getMonth(), dpkValidade.getDayOfMonth());
+            edtValidade.setText(String.format("%1$td/%1$tm/%1$tY", vencimento));
+            edtValidade.setSelection(edtValidade.length());
         };
     }
 
-    private void initPermissoes () {
-        //USUARIO DAR A PERMISSAO PARA LER
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSAO_IO);
-            }
-        }
-
-        //USUARIO DAR A PERMISSAO PARA ESCREVER
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSAO_IO);
-            }
-        }
-    }
-
     private AdapterView.OnItemClickListener listLancamentoColeta_ItemClick() {
-        return new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(listLancamentoColeta.getAdapter().getCount() > 0) {
-                    setItem((LancamentoColeta) adapterView.getItemAtPosition(i));
-                    mudarBotoesClickList();
-                    preencherCamposItensDoList();
-                }
+        return (adapterView, view, i, l) -> {
+            if(listLancamentoColeta.getAdapter().getCount() > 0) {
+                setItem((LancamentoColeta) adapterView.getItemAtPosition(i));
+                mudarBotoesClickList();
+                preencherCamposItensDoList();
             }
         };
     }
@@ -950,163 +908,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View.OnFocusChangeListener edtEan_FocusChange() {
-        return new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                if(isFocusBuscaEan()) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                buscarProdutoPorEan();
-                                preencherCamposItem();
-                            } catch (ApiException apie) {
-                                Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
-                            } catch (IOException e) {
-                                Toast.makeText(
-                                        getApplicationContext(),
-                                        "Erro ao buscar produto!!!\n"+e.getMessage(),
-                                        Toast.LENGTH_LONG
-                                ).show();
-                            }
-                        }
-                    });
+        return (view, hasFocus) -> {
+            if(isFocusBuscaEan()) {
+                try {
+                    buscarProdutoPorEan();
+                    preencherCamposItem();
+                } catch (RegistroNotFoundException apie) {
+                    Toast.makeText(getApplicationContext(), apie.getMessage(), Toast.LENGTH_LONG).show();
                 }
-            }
-        };
-    }
-
-    private View.OnClickListener btiScanner_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                abrirLeitura();
-            }
-        };
-    }
-
-    private View.OnClickListener btnNovaColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                iniciarNovaColeta();
-            }
-        };
-    }
-
-    private View.OnClickListener btnLogout_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                logout();
-            }
-        };
-    }
-
-    private View.OnClickListener btnLimpar_Click() {
-        return new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                mudarBotoesIniciarItem();
-                iniciarNovoItem();
-            }
-        };
-    }
-
-    private View.OnClickListener btnBuscarColetaPorFornecedorNotaFiscal_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        buscarColetaPorFornecedorNotaFiscal();
-                    }
-                });
-            }
-        };
-    }
-
-    private View.OnClickListener btnExcluirItemColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        deletarItemColeta();
-                    }
-                });
-            }
-        };
-    }
-
-    private View.OnClickListener btnAlterarItemColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        atualizarItemColeta();
-                    }
-                });
-            }
-        };
-    }
-
-    private View.OnClickListener btnSalvarItemColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        salvarItemColeta();
-                    }
-                });
-            }
-        };
-    }
-
-    private View.OnClickListener btnSalvarColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        salvarColeta();
-                    }
-                });
-            }
-        };
-    }
-
-    private View.OnClickListener btnAlterarColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        atualizarColeta();
-                    }
-                });
-            }
-        };
-    }
-
-    private View.OnClickListener btnExcluirColeta_Click() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        deletarColeta();
-                    }
-                });
             }
         };
     }

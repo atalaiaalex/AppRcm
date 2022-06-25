@@ -1,6 +1,6 @@
 package br.com.supermercadoatalaia.apprcm.exception;
 
-public class RequestFailureException extends RuntimeException {
+public class RequestFailureException extends Exception {
 
     public RequestFailureException(String msg) {
         super(msg);

@@ -2,18 +2,15 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:zxing_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fl_scanner"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ScannerActivity">
+    tools:context=".LeitorActivity">
 
-    <com.journeyapps.barcodescanner.CompoundBarcodeView
-        android:id="@+id/zxing_barcode_scanner"
+    <me.dm7.barcodescanner.zxing.ZXingScannerView
+        android:id="@+id/z_xing_scanner"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        zxing_view:zxing_scanner_layout="@layout/custom_barcode_scanner">
-
-    </com.journeyapps.barcodescanner.CompoundBarcodeView>
+        android:layout_height="match_parent" />
 
     <ImageButton
         android:id="@+id/btnSairCamera"

@@ -2,34 +2,23 @@ package br.com.supermercadoatalaia.apprcm.domain.repository;
 
 import android.content.Context;
 import android.os.StrictMode;
-import android.util.JsonReader;
-import android.util.JsonToken;
-import android.util.JsonWriter;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import br.com.supermercadoatalaia.apprcm.config.RetrofitAtalaiaConfig;
 import br.com.supermercadoatalaia.apprcm.config.RetrofitFlexConfig;
-import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
-import br.com.supermercadoatalaia.apprcm.core.HttpResposta;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
-import br.com.supermercadoatalaia.apprcm.core.exception.ApiException;
 import br.com.supermercadoatalaia.apprcm.domain.model.Coleta;
 import br.com.supermercadoatalaia.apprcm.domain.model.LancamentoColeta;
 import br.com.supermercadoatalaia.apprcm.domain.model.RCMFlex;
 import br.com.supermercadoatalaia.apprcm.domain.model.RCMProduto;
 import br.com.supermercadoatalaia.apprcm.domain.model.RespostaRCMInserir;
 import br.com.supermercadoatalaia.apprcm.domain.service.ColetaService;
+import br.com.supermercadoatalaia.apprcm.dto.help.MessageResponse;
 import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
 import br.com.supermercadoatalaia.apprcm.exception.RequestFailureException;
 import retrofit2.Call;
@@ -37,9 +26,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ColetaRepository {
-
-    private static final String FORMATO_DATA_HORA = "yyyy-MM-dd'T'HH:mm:ss.SSSSS";
-    private static final String FORMATO_DATA = "yyyy-MM-dd";
 
     private final ColetaService service;
     private final Context context;
@@ -54,11 +40,11 @@ public class ColetaRepository {
 
     public Coleta buscar(Long id) throws RegistroNotFoundException {
         Call<Coleta> call = service.buscarColeta(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 id
         );
 
-        Response<Coleta> coleta = null;
+        Response<Coleta> coleta;
         try {
             coleta = call.execute();
         } catch (IOException e) {
@@ -76,11 +62,11 @@ public class ColetaRepository {
             throws RegistroNotFoundException {
 
         Call<List<Coleta>> call = service.listarColetasPorFornecedor(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 fornecedorId
         );
 
-        Response<List<Coleta>> coletas = null;
+        Response<List<Coleta>> coletas;
         try {
             coletas = call.execute();
         } catch (IOException e) {
@@ -98,11 +84,11 @@ public class ColetaRepository {
             throws RegistroNotFoundException {
 
         Call<List<Coleta>> call = service.listarColetasPorNotaFiscal(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 numeroNotaFiscal
         );
 
-        Response<List<Coleta>> coletas = null;
+        Response<List<Coleta>> coletas;
         try {
             coletas = call.execute();
         } catch (IOException e) {
@@ -120,12 +106,12 @@ public class ColetaRepository {
             throws RegistroNotFoundException {
 
         Call<Coleta> call = service.listarColetasPorFornecedorENotaFiscal(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 fornecedorId,
                 numeroNotaFiscal
         );
 
-        Response<Coleta> coleta = null;
+        Response<Coleta> coleta;
         try {
             coleta = call.execute();
         } catch (IOException e) {
@@ -139,14 +125,14 @@ public class ColetaRepository {
         throw new RegistroNotFoundException("Coleta do fornecedor e NF não encontrado");
     }
 
-    public Coleta salvar(Coleta coleta) throws RequestFailureException {
+    public MessageResponse salvar(Coleta coleta) throws RequestFailureException {
 
-        Call<Coleta> call = service.salvarColeta(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+        Call<MessageResponse> call = service.salvarColeta(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 coleta
         );
 
-        Response<Coleta> coletaSalva = null;
+        Response<MessageResponse> coletaSalva;
         try {
             coletaSalva = call.execute();
         } catch (IOException e) {
@@ -170,7 +156,7 @@ public class ColetaRepository {
 
         Log.i("RCMService", "Iniciando processo de inserção");
 
-        callRcm.enqueue(new Callback<RespostaRCMInserir>() {
+        callRcm.enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<RespostaRCMInserir> call, Response<RespostaRCMInserir> response) {
                 RespostaRCMInserir respostaRCMInserir = response.body();
@@ -233,15 +219,15 @@ public class ColetaRepository {
         );
     }
 
-    public Coleta atualizar(Coleta coleta) throws RequestFailureException {
+    public MessageResponse atualizar(Coleta coleta) throws RequestFailureException {
 
-        Call<Coleta> call = service.atualizarColeta(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+        Call<MessageResponse> call = service.atualizarColeta(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 coleta.getId(),
                 coleta
         );
 
-        Response<Coleta> coletaAtualizada = null;
+        Response<MessageResponse> coletaAtualizada;
         try {
             coletaAtualizada = call.execute();
         } catch (IOException e) {
@@ -255,36 +241,34 @@ public class ColetaRepository {
         throw new RequestFailureException("Não foi possível atualizar a coleta");
     }
 
-    public HttpResposta deletar(Coleta coleta) throws RequestFailureException {
-        Call<Coleta> call = service.deletarColeta(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+    public void deletar(Coleta coleta) throws RequestFailureException {
+        Call<Void> call = service.deletarColeta(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 coleta.getId()
         );
 
-        Response<Coleta> coletaDeletada = null;
+        Response<Void> coletaDeletada;
         try {
             coletaDeletada = call.execute();
         } catch (IOException e) {
             throw new RequestFailureException("Erro ao deletar coleta", e);
         }
 
-        if(coletaDeletada.isSuccessful()) {
-            return HttpResposta.SEM_CONTEUDO;
+        if(!coletaDeletada.isSuccessful()) {
+            throw new RequestFailureException("Não foi possível deletar a coleta");
         }
-
-        throw new RequestFailureException("Não foi possível deletar a coleta");
     }
 
-    public LancamentoColeta salvarItem(Coleta coleta, LancamentoColeta item)
+    public MessageResponse salvarItem(Coleta coleta, LancamentoColeta item)
             throws RequestFailureException {
 
-        Call<LancamentoColeta> call = service.salvarItem(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+        Call<MessageResponse> call = service.salvarItem(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 coleta.getId(),
                 item
         );
 
-        Response<LancamentoColeta> itemSalvo = null;
+        Response<MessageResponse> itemSalvo;
         try {
             itemSalvo = call.execute();
         } catch (IOException e) {
@@ -298,324 +282,48 @@ public class ColetaRepository {
         throw new RequestFailureException("Não foi possível salvar o item da coleta");
     }
 
-    public LancamentoColeta atualizarItem(Coleta coleta, LancamentoColeta item)
+    public MessageResponse atualizarItem(Coleta coleta, LancamentoColeta item)
             throws RequestFailureException {
 
-        Call<Coleta> call = service.atualizarItem(
-                SharedPrefManager.getInstance(context).getAuthorization(),
+        Call<MessageResponse> call = service.atualizarItem(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
                 coleta.getId(),
                 item.getId(),
                 item
         );
 
-        Response<Coleta> coletaAtualizada = null;
+        Response<MessageResponse> itemAtualizado;
         try {
-            coletaAtualizada = call.execute();
+            itemAtualizado = call.execute();
         } catch (IOException e) {
-            throw new RequestFailureException("Erro ao atualizar coleta", e);
+            throw new RequestFailureException("Erro ao atualizar item", e);
         }
 
-        if(coletaAtualizada.isSuccessful()) {
-            return coletaAtualizada.body();
+        if(itemAtualizado.isSuccessful()) {
+            return itemAtualizado.body();
         }
 
-        throw new RequestFailureException("Não foi possível atualizar a coleta");
+        throw new RequestFailureException("Não foi possível atualizar o item");
     }
 
-    public HttpResposta deletarItem(Coleta coleta, LancamentoColeta item)
-            throws ApiException, IOException {
-        apiConsumer.iniciarConexao(
-                "DELETE",
-                urlColetaLancarId(coleta.getId(), item.getId()),
-                context
+    public void deletarItem(Coleta coleta, LancamentoColeta item)
+            throws RequestFailureException {
+
+        Call<Void> call = service.deletarItem(
+                SharedPrefManager.getInstance(context).getAuthorizationToken(),
+                coleta.getId(),
+                item.getId()
         );
 
-        JsonReader jsonReader = apiConsumer.getJsonReader();
-        HttpResposta httpResposta = apiConsumer.getHttpResposta();
-
-        if(httpResposta.getCode() > 300) {
-            throw new ApiException(httpResposta, jsonReader);
+        Response<Void> response;
+        try {
+            response = call.execute();
+        }catch(IOException e) {
+            throw new RequestFailureException("Erro ao deletar item", e);
         }
 
-        apiConsumer.fecharConexao();
-
-        return httpResposta;
-    }
-
-    private URL urlColetaId(Long id) throws MalformedURLException {
-        return new URL(
-                ApiConsumer.REST_COLETAS +
-                        "/" + id
-        );
-    }
-
-    private URL urlColetaFornecedorId(Long fornecedorId) throws MalformedURLException {
-        return new URL(
-                ApiConsumer.REST_COLETAS +
-                        ApiConsumer.FORNECEDOR +
-                        fornecedorId
-        );
-    }
-
-    private URL urlColetaNumeroNotaFiscal(Long numeroNotaFiscal) throws MalformedURLException {
-        return new URL(
-                ApiConsumer.REST_COLETAS +
-                        ApiConsumer.NUMERO_NOTA_FISCAL +
-                        numeroNotaFiscal
-        );
-    }
-
-    private URL urlColetaFornecedorIdNumeroNotaFiscal(Long fornecedorId, Long numeroNotaFiscal)
-            throws MalformedURLException {
-        return new URL(
-                ApiConsumer.REST_COLETAS +
-                        ApiConsumer.FORNECEDOR +
-                        fornecedorId +
-                        ApiConsumer.NUMERO_NOTA_FISCAL +
-                        numeroNotaFiscal
-        );
-    }
-
-    private URL urlColetaLancar(Long id) throws MalformedURLException {
-        return new URL(
-                ApiConsumer.REST_COLETAS +
-                        "/" + id +
-                        ApiConsumer.LANCAR
-        );
-    }
-
-    private URL urlColetaLancarId(Long id, Long itemId) throws MalformedURLException {
-        return new URL(
-                ApiConsumer.REST_COLETAS +
-                        "/" + id +
-                        ApiConsumer.LANCAR +
-                        itemId
-        );
-    }
-
-    private void setColetaToApi(JsonWriter jsonWriter, Coleta coleta)
-            throws IOException {
-
-        jsonWriter.setIndent("  ");
-        jsonWriter.beginObject();
-        jsonWriter.name("id").value(coleta.getId());
-        jsonWriter.name("fornecedorId").value(coleta.getFornecedorId());
-        jsonWriter.name("numeroNotaFiscal").value(coleta.getNumeroNotaFiscal());
-        jsonWriter.name("serie").value(coleta.getSerie());
-        jsonWriter.name("pedidosId");
-        setListPedidosId(jsonWriter, coleta.getPedidosId());
-        jsonWriter.name("unidade").value(coleta.getUnidade());
-        if(coleta.getDataMovimento() != null) {
-            jsonWriter.name("dataMovimento").value(
-                    new SimpleDateFormat(FORMATO_DATA_HORA).format(coleta.getDataMovimento().getTime())
-            );
+        if(!response.isSuccessful()) {
+            throw new RequestFailureException("Erro ao deletar item");
         }
-        if(coleta.getDataAlteracao() != null) {
-            jsonWriter.name("dataAlteracao").value(
-                    new SimpleDateFormat(FORMATO_DATA_HORA).format(coleta.getDataAlteracao().getTime())
-            );
-        }
-        if(coleta.getItens().isEmpty()) {
-            jsonWriter.name("itens").nullValue();
-        } else {
-            jsonWriter.name("itens");
-            setListaLancamentoColetaToApi(jsonWriter, coleta.getItens());
-        }
-        jsonWriter.endObject();
-        jsonWriter.close();
-    }
-
-    private void setListPedidosId(JsonWriter jsonWriter, Set<Long> pedidosId)
-            throws IOException {
-
-        jsonWriter.beginArray();
-        for(Long id : pedidosId) {
-            jsonWriter.value(id);
-        }
-        jsonWriter.endArray();
-    }
-
-    private void setListaLancamentoColetaToApi(JsonWriter jsonWriter, List<LancamentoColeta> itens)
-            throws IOException {
-
-        jsonWriter.beginArray();
-        for(LancamentoColeta item : itens) {
-            setLancamentoColetaToApi(jsonWriter, item, false);
-        }
-        jsonWriter.endArray();
-    }
-
-    private void setLancamentoColetaToApi(JsonWriter jsonWriter, LancamentoColeta item, boolean unico)
-            throws IOException {
-
-        jsonWriter.setIndent("  ");
-        jsonWriter.beginObject();
-        jsonWriter.name("id").value(item.getId());
-        jsonWriter.name("produtoId").value(item.getProdutoId());
-        jsonWriter.name("produtoDescricao").value(item.getProdutoDescricao());
-        jsonWriter.name("produtoEan").value(item.getProdutoEan());
-        jsonWriter.name("qntNaEmb").value(item.getQntNaEmb());
-        jsonWriter.name("qntEmb").value(item.getQntEmb());
-        jsonWriter.name("qntTotal").value(item.getQntTotal());
-        if(item.getVencimento() != null) {
-            jsonWriter.name("vencimento").value(
-                    new SimpleDateFormat(FORMATO_DATA).format(item.getVencimento().getTime())
-            );
-        }
-        jsonWriter.name("diasValidadeMinima").value(item.getDiasValidadeMinima());
-        if(item.getDataAlteracao() != null) {
-            jsonWriter.name("dataAlteracao").value(
-                    new SimpleDateFormat(FORMATO_DATA_HORA).format(item.getDataAlteracao().getTime())
-            );
-        }
-        jsonWriter.endObject();
-
-        if(unico) {
-            jsonWriter.close();
-        }
-    }
-
-    private List<Coleta> instanciarListaColeta(JsonReader jsonReader)
-            throws IOException, ParseException {
-        List<Coleta> coletas = new ArrayList<>();
-
-        jsonReader.beginArray();
-        while(jsonReader.hasNext()){
-            coletas.add(instanciarColeta(jsonReader, false));
-        }
-        jsonReader.endArray();
-        jsonReader.close();
-
-        return coletas;
-    }
-
-    private Coleta instanciarColeta(JsonReader jsonReader, boolean unico)
-            throws IOException, ParseException {
-        Long id = 0L;
-        Long fornecedorId = 0L;
-        Long numeroNotaFiscal = 0L;
-        String serie = "";
-        Set<Long> pedidosId = new HashSet<>();
-        String unidade = "";
-        List<LancamentoColeta> itens = new ArrayList<>();
-        Calendar dataMovimento = Calendar.getInstance();
-        Calendar dataAlteracao = Calendar.getInstance();
-
-        jsonReader.beginObject();
-        while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("id")) {
-                id = jsonReader.nextLong();
-            } else if(key.equals("fornecedorId") && jsonReader.peek() != JsonToken.NULL) {
-                fornecedorId = jsonReader.nextLong();
-            } else if(key.equals("numeroNotaFiscal") && jsonReader.peek() != JsonToken.NULL) {
-                numeroNotaFiscal = jsonReader.nextLong();
-            } else if(key.equals("serie") && jsonReader.peek() != JsonToken.NULL) {
-                serie = jsonReader.nextString();
-            } else if(key.equals("pedidosId") && jsonReader.peek() != JsonToken.NULL) {
-                jsonReader.beginArray();
-                while (jsonReader.hasNext()) {
-                    pedidosId.add(jsonReader.nextLong());
-                }
-                jsonReader.endArray();
-            } else if(key.equals("unidade") && jsonReader.peek() != JsonToken.NULL) {
-                unidade = jsonReader.nextString();
-            } else if(key.equals("dataMovimento") && jsonReader.peek() != JsonToken.NULL) {
-                //Log.i("DataMovimento API", new Date().toString()); //Devo transformar a data para GMT+00:00, e por no banco, cada aplicativo
-                    //deve se responsabilizar por adicionar o seu GMT tanto para ler quanto para escrever as datas.
-                dataMovimento.setTime(
-                        new SimpleDateFormat(FORMATO_DATA_HORA).parse(jsonReader.nextString())
-                );
-            } else if(key.equals("dataAlteracao") && jsonReader.peek() != JsonToken.NULL) {
-                dataAlteracao.setTime(
-                        new SimpleDateFormat(FORMATO_DATA_HORA).parse(jsonReader.nextString())
-                );
-            } else if(key.equals("itens") && jsonReader.peek() != JsonToken.NULL) {
-                jsonReader.beginArray();
-                while (jsonReader.hasNext()) {
-                    itens.add(instanciarLancamentoColeta(jsonReader));
-                }
-                jsonReader.endArray();
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-
-        if(unico) {
-            jsonReader.close();
-        }
-
-        return new Coleta(
-                id,
-                fornecedorId,
-                numeroNotaFiscal,
-                serie,
-                pedidosId,
-                itens,
-                dataMovimento,
-                dataAlteracao,
-                unidade
-        );
-    }
-
-    private LancamentoColeta instanciarLancamentoColeta(JsonReader jsonReader)
-            throws IOException, ParseException {
-        Long id = 0L;
-        Long produtoId = 0L;
-        String produtoDescricao = "";
-        String produtoEan = "";
-        Double qntNaEmb = 0.0;
-        Double qntEmb = 0.0;
-        Double qntTotal = 0.0;
-        Calendar vencimento = Calendar.getInstance();
-        Integer diasValidadeMinima = 0;
-        Calendar dataAlteracao = Calendar.getInstance();
-
-        jsonReader.beginObject();
-        while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if(key.equals("id")) {
-                id = jsonReader.nextLong();
-            } else if(key.equals("produtoId") && jsonReader.peek() != JsonToken.NULL) {
-                produtoId = jsonReader.nextLong();
-            } else if(key.equals("produtoDescricao") && jsonReader.peek() != JsonToken.NULL) {
-                produtoDescricao = jsonReader.nextString();
-            } else if(key.equals("produtoEan") && jsonReader.peek() != JsonToken.NULL) {
-                produtoEan = jsonReader.nextString();
-            } else if(key.equals("qntNaEmb") && jsonReader.peek() != JsonToken.NULL) {
-                qntNaEmb = jsonReader.nextDouble();
-            } else if(key.equals("qntEmb") && jsonReader.peek() != JsonToken.NULL) {
-                qntEmb = jsonReader.nextDouble();
-            } else if(key.equals("qntTotal") && jsonReader.peek() != JsonToken.NULL) {
-                qntTotal = jsonReader.nextDouble();
-            } else if(key.equals("vencimento") && jsonReader.peek() != JsonToken.NULL) {
-                vencimento.setTime(
-                        new SimpleDateFormat(FORMATO_DATA).parse(jsonReader.nextString())
-                );
-            } else if(key.equals("diasValidadeMinima") && jsonReader.peek() != JsonToken.NULL) {
-                diasValidadeMinima = jsonReader.nextInt();
-            } else if(key.equals("dataAlteracao") && jsonReader.peek() != JsonToken.NULL) {
-                dataAlteracao.setTime(
-                    new SimpleDateFormat(FORMATO_DATA_HORA).parse(jsonReader.nextString())
-            );
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-
-        return new LancamentoColeta(
-                id,
-                produtoId,
-                produtoDescricao,
-                qntNaEmb,
-                qntEmb,
-                qntTotal,
-                vencimento,
-                diasValidadeMinima,
-                produtoEan,
-                dataAlteracao
-        );
     }
 }

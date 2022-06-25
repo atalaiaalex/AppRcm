@@ -1,8 +1,9 @@
-package br.com.supermercadoatalaia.apprcm.domain.model;
+package br.com.supermercadoatalaia.apprcm.dto.response;
 
 import java.io.Serializable;
 import java.util.List;
 
+import br.com.supermercadoatalaia.apprcm.dto.help.Message;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

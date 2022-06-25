@@ -1,7 +1,7 @@
 package br.com.supermercadoatalaia.apprcm.domain.service;
 
-import br.com.supermercadoatalaia.apprcm.domain.model.AutenticarSessao;
-import br.com.supermercadoatalaia.apprcm.domain.model.AutenticacaoResponse;
+import br.com.supermercadoatalaia.apprcm.dto.request.AutenticarSessao;
+import br.com.supermercadoatalaia.apprcm.dto.response.AutenticacaoResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;

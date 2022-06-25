@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.NetworkOnMainThreadException;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -16,12 +18,11 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 
+import br.com.supermercadoatalaia.apprcm.config.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.controller.LoginController;
-import br.com.supermercadoatalaia.apprcm.core.ApiConsumer;
-import br.com.supermercadoatalaia.apprcm.core.ConfigApp;
 import br.com.supermercadoatalaia.apprcm.core.SharedPrefManager;
-import br.com.supermercadoatalaia.apprcm.domain.model.UserLogin;
-import br.com.supermercadoatalaia.apprcm.domain.model.Usuario;
+import br.com.supermercadoatalaia.apprcm.domain.repository.HostRepository;
+import br.com.supermercadoatalaia.apprcm.dto.request.UserLogin;
 import br.com.supermercadoatalaia.apprcm.exception.RegistroNotFoundException;
 
 public class LoginActivity extends AppCompatActivity {
@@ -43,12 +44,15 @@ public class LoginActivity extends AppCompatActivity {
         initPermissoes();
         initConfigApp();
 
-        try {
-            ApiConsumer.SERVER = configApp.lerTxt();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
-            if(SharedPrefManager.getInstance(this).isLoggedIn()) {
+        try {
+            configApp.lerTxt();
+
+            if(SharedPrefManager.getInstance(getApplicationContext()).isLoggedIn()) {
                 finish();
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         } catch (IOException e) {
             configurar();
@@ -75,21 +79,21 @@ public class LoginActivity extends AppCompatActivity {
             UserLogin user = new UserLogin(username, password);
 
             try {
-                Usuario usuario = new LoginController(getApplicationContext()).login(user);
+                new LoginController(getApplicationContext()).login(user);
 
-                Toast.makeText(
-                        getApplicationContext(),
-                        "Bem vindo " + usuario.getNome(),
-                        Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(getApplicationContext(),
+                        "Bem vindo " +
+                                SharedPrefManager.getInstance(getApplicationContext()).getUserNome(),
+                        Toast.LENGTH_LONG).show();
 
-                startActivity(new Intent(this, MainActivity.class));
-            }catch (RegistroNotFoundException e) {
-                Toast.makeText(
-                        getApplicationContext(),
-                        "Erro ao logar" + e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }catch (RegistroNotFoundException | NullPointerException e) {
+                Toast.makeText(getApplicationContext(),
+                        "Falha no login " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+
+                configurar();
+                e.printStackTrace();
             }
         };
     }
@@ -103,12 +107,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void configurar() {
-        CaixaDialogoHost dialogo = new CaixaDialogoHost(
-                "Path Server Host",
-                configApp
-        );
-
-        dialogo.show(getSupportFragmentManager(), "DialogoHostApi");
+        try {
+            configApp.salvarTxt(
+                    new HostRepository(getApplicationContext())
+                            .getHost("g134679p")
+                            .getHost()
+            );
+        } catch (IOException | NetworkOnMainThreadException | RegistroNotFoundException e) {
+            Toast.makeText(getApplicationContext(), "Impossível conectar obter o path do host", Toast.LENGTH_LONG)
+                    .show();
+            //e.printStackTrace();
+        }
     }
 
     private void initConfigApp() {
